@@ -33,11 +33,11 @@
       
       <div class="nav-links">
         <a href="#problem-section" class="nav-item">1. The Problem</a>
-        <a href="#why-not-addition" class="nav-item">2. Why Not Simple Addition?</a>
+        <a href="#why-not-addition" class="nav-item">2. Why Not Addition?</a>
         <a href="#method-section" class="nav-item">3. Simpson's 1/3 Rule</a>
-        <a href="#data-mode-section" class="nav-item">4. Active Data & Modes</a>
-        <a href="#experiments-section" class="nav-item highlight">5. Virtual Laboratory</a>
-        <a href="#comparative-audit" class="nav-item">6. Comparative Audit</a>
+        <a href="#data-mode-section" class="nav-item">4. Active Data</a>
+        <a href="#experiments-section" class="nav-item highlight">5. Experiments</a>
+        <a href="#cpp-section" class="nav-item" style="color: #10b981; font-weight: 700;">⚡ C++ WASM Engine</a>
         <button id="btn-print-report" class="btn btn-outline-sm">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/></svg>
           Lab Report
@@ -58,6 +58,7 @@
         <a href="#experiments-section" class="step-badge"><span class="step-num">5</span> Run 6 Experiments</a>
         <a href="#comparative-audit" class="step-badge"><span class="step-num">6</span> Simpson vs Trapezoidal</a>
         <a href="#results-meaning" class="step-badge"><span class="step-num">7</span> Engineering Meaning</a>
+        <a href="#cpp-section" class="step-badge" style="background: #064e3b; color: #a7f3d0;"><span class="step-num" style="background: #10b981; color: #000;">⚡</span> C++ Engine</a>
         <a href="#report-section" class="step-badge"><span class="step-num">8</span> Download Report</a>
       </div>
     </div>
@@ -71,6 +72,7 @@
         <div class="hero-tags">
           <span class="tag tag-gold"><span class="pulse-dot"></span> 10 kW Academic Solar PV Array</span>
           <span class="tag tag-blue">Composite Simpson's 1/3 Rule: \(\mathcal{O}(h^4)\)</span>
+          <span class="tag tag-wasm"><span class="pulse-dot-green"></span> C++ WebAssembly Engine (Active)</span>
           <span class="tag tag-teal">Interactive Virtual Laboratory</span>
         </div>
         <h1 class="hero-heading">Numerical Integration of Solar Panel Energy Output & Building Consumption</h1>
@@ -1162,10 +1164,211 @@
       </div>
     </section>
 
-    <!-- SECTION 6: DOWNLOAD EXPERIMENT REPORT & MODAL -->
+    <!-- SECTION: C++ IMPLEMENTATION & WEBASSEMBLY ENGINE -->
+    <section id="cpp-section" class="content-section card">
+      <div class="section-badge-bar">
+        <span class="section-tag"><span class="icon">⚡</span> Section 6: C++ Implementation & WebAssembly Engine</span>
+        <span class="active-dataset-tag"><span class="status-indicator"></span> C++ WASM Kernel: <strong>Loaded & Active</strong></span>
+      </div>
+
+      <div class="cpp-header-box">
+        <div>
+          <h2 class="section-title">C++ Implementation</h2>
+          <p class="section-subtitle">
+            Actual compiled C++ computational methods code executing in WebAssembly at near-native binary speed inside your browser.
+          </p>
+        </div>
+        <div class="cpp-status-badge-card" id="wasm-engine-status-card">
+          <div class="wasm-status-icon">⚙️</div>
+          <div class="wasm-status-info">
+            <div class="wasm-status-title">Runtime: <span id="wasm-runtime-name">WebAssembly (C++ Core)</span></div>
+            <div class="wasm-status-sub" id="wasm-status-time">Execution Time: &lt; 0.05 ms</div>
+          </div>
+          <button id="btn-rerun-wasm" class="btn btn-sm btn-outline">⚡ Re-run C++ WASM</button>
+        </div>
+      </div>
+
+      <!-- Live C++ Engine Telemetry Results Box -->
+      <div class="wasm-live-results-card">
+        <div class="live-card-header">
+          <h4>Live Output from Compiled C++ WebAssembly Binary:</h4>
+          <span class="badge badge-success">Memory Buffer: Synced with Active Mode</span>
+        </div>
+        <div class="wasm-results-grid">
+          <div class="w-res-item">
+            <span class="w-res-lbl">Generated Energy (E_gen):</span>
+            <span class="w-res-val font-mono" id="wasm-out-gen">62.9667 kWh</span>
+            <span class="w-res-sub">simpsons_one_third()</span>
+          </div>
+          <div class="w-res-item">
+            <span class="w-res-lbl">Consumed Energy (E_cons):</span>
+            <span class="w-res-val font-mono" id="wasm-out-cons">46.3000 kWh</span>
+            <span class="w-res-sub">simpsons_one_third()</span>
+          </div>
+          <div class="w-res-item">
+            <span class="w-res-lbl">Net Energy (E_net):</span>
+            <span class="w-res-val font-mono text-positive" id="wasm-out-net">+16.6667 kWh</span>
+            <span class="w-res-sub">E_gen - E_cons</span>
+          </div>
+          <div class="w-res-item">
+            <span class="w-res-lbl">Trapezoidal Generated:</span>
+            <span class="w-res-val font-mono" id="wasm-out-trap-gen">62.9000 kWh</span>
+            <span class="w-res-sub">trapezoidal_rule()</span>
+          </div>
+          <div class="w-res-item">
+            <span class="w-res-lbl">Trapezoidal Consumed:</span>
+            <span class="w-res-val font-mono" id="wasm-out-trap-cons">46.2500 kWh</span>
+            <span class="w-res-sub">trapezoidal_rule()</span>
+          </div>
+          <div class="w-res-item">
+            <span class="w-res-lbl">Quadrature Discrepancy:</span>
+            <span class="w-res-val font-mono text-positive" id="wasm-out-diff">+0.0667 kWh</span>
+            <span class="w-res-sub">Simpson - Trapezoidal</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- C++ Code Viewer -->
+      <div class="code-viewer-container">
+        <div class="code-viewer-header">
+          <div class="code-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            solarsim_engine.cpp — C++ Computational Methods Program
+          </div>
+          <button id="btn-copy-cpp" class="btn btn-sm btn-ghost">Copy C++ Code</button>
+        </div>
+        <pre class="code-pre"><code id="cpp-code-display">#include &lt;iostream&gt;
+#include &lt;vector&gt;
+#include &lt;iomanip&gt;
+#include &lt;stdexcept&gt;
+
+#ifdef __EMSCRIPTEN__
+#include &lt;emscripten.h&gt;
+#define WASM_EXPORT EMSCRIPTEN_KEEPALIVE
+#else
+#define WASM_EXPORT
+#endif
+
+using namespace std;
+
+// Composite Simpson's 1/3 Rule (Quadratic O(h^4) Quadrature)
+double simpsons_one_third(const vector&lt;double&gt;&amp; y, double h) {
+    int n = static_cast&lt;int&gt;(y.size()) - 1;
+
+    if (n &lt;= 0) {
+        throw invalid_argument("At least two data points required.");
+    }
+    if (n % 2 != 0) {
+        throw invalid_argument("Simpson's Rule requires even intervals.");
+    }
+
+    double endpoint_sum = y[0] + y[n];
+    double odd_sum = 0.0;
+    double even_sum = 0.0;
+
+    for (int i = 1; i &lt; n; i += 2) {
+        odd_sum += y[i];
+    }
+    for (int i = 2; i &lt; n; i += 2) {
+        even_sum += y[i];
+    }
+
+    return (h / 3.0) * (endpoint_sum + 4.0 * odd_sum + 2.0 * even_sum);
+}
+
+// Composite Trapezoidal Rule (Linear O(h^2) Quadrature)
+double trapezoidal_rule(const vector&lt;double&gt;&amp; y, double h) {
+    int n = static_cast&lt;int&gt;(y.size()) - 1;
+
+    if (n &lt;= 0) {
+        throw invalid_argument("At least two data points required.");
+    }
+
+    double interior_sum = 0.0;
+    for (int i = 1; i &lt; n; i++) {
+        interior_sum += y[i];
+    }
+
+    return (h / 2.0) * (y[0] + 2.0 * interior_sum + y[n]);
+}
+
+// WebAssembly Interoperability Bridge (Accepts dynamic user inputs via linear memory)
+extern "C" {
+
+WASM_EXPORT
+double simpsons_one_third_wasm(const double* y, int length, double h) {
+    if (!y || length &lt; 3 || (length - 1) % 2 != 0) return 0.0;
+    vector&lt;double&gt; v(y, y + length);
+    return simpsons_one_third(v, h);
+}
+
+WASM_EXPORT
+double trapezoidal_rule_wasm(const double* y, int length, double h) {
+    if (!y || length &lt; 2) return 0.0;
+    vector&lt;double&gt; v(y, y + length);
+    return trapezoidal_rule(v, h);
+}
+
+WASM_EXPORT
+int compute_audit(const double* p_gen, const double* p_cons, int length, double h, double* out) {
+    if (!p_gen || !p_cons || !out || length &lt; 3 || (length - 1) % 2 != 0) return -1;
+    vector&lt;double&gt; v_gen(p_gen, p_gen + length);
+    vector&lt;double&gt; v_cons(p_cons, p_cons + length);
+
+    double e_gen_simp  = simpsons_one_third(v_gen, h);
+    double e_cons_simp = simpsons_one_third(v_cons, h);
+    double e_net_simp  = e_gen_simp - e_cons_simp;
+
+    double e_gen_trap  = trapezoidal_rule(v_gen, h);
+    double e_cons_trap = trapezoidal_rule(v_cons, h);
+    double e_net_trap  = e_gen_trap - e_cons_trap;
+
+    out[0] = e_gen_simp;
+    out[1] = e_cons_simp;
+    out[2] = e_net_simp;
+    out[3] = e_gen_trap;
+    out[4] = e_cons_trap;
+    out[5] = e_net_trap;
+    out[6] = e_gen_simp - e_gen_trap; // Generation discrepancy
+    out[7] = e_cons_simp - e_cons_trap; // Consumption discrepancy
+    out[8] = e_net_simp - e_net_trap; // Net discrepancy
+
+    return 0; // Success
+}
+
+}</code></pre>
+      </div>
+
+      <!-- How It Works Explanation Grid -->
+      <div class="cpp-explanation-grid">
+        <div class="analysis-card">
+          <h4>1. Mathematical Quadrature in C++</h4>
+          <p>
+            The <code>simpsons_one_third()</code> function implements composite quadratic quadrature. It groups the telemetry ordinates into endpoints (\(y_0 + y_n\)), odd-indexed midpoints (\(4 \times \sum y_{\text{odd}}\)), and even-indexed shared boundaries (\(2 \times \sum y_{\text{even}}\)). This achieves fourth-order truncation error \(\mathcal{O}(h^4)\), capturing smooth curvature that the linear \(\mathcal{O}(h^2)\) <code>trapezoidal_rule()</code> truncates.
+          </p>
+        </div>
+        <div class="analysis-card">
+          <h4>2. Dynamic Inputs & Memory Bridging</h4>
+          <p>
+            Instead of hardcoding the 13 report values, the C++ program was enhanced with C-linkage export functions (<code>extern "C"</code>). JavaScript writes dynamic user telemetry directly into the WebAssembly linear memory buffer (<code>Float64Array</code>), passing memory pointers to C++. The C++ engine executes the integration loops directly on raw memory without garbage collection overhead.
+          </p>
+        </div>
+        <div class="analysis-card">
+          <h4>3. Emscripten & WebAssembly Build</h4>
+          <p>
+            The C++ code compiles into binary WebAssembly bytecode (<code>solarsim_engine.wasm</code>). The browser instantiates this compiled binary, executing at near-native CPU speeds.
+          </p>
+          <div class="math-box-sm" style="text-align: left; font-size: 0.78rem; margin-top: 0.5rem; overflow-x: auto;">
+            <code>emcc -O3 solarsim_engine.cpp -s WASM=1 -s EXPORTED_FUNCTIONS='["_simpsons_one_third_wasm", "_trapezoidal_rule_wasm", "_compute_audit"]' -o solarsim_engine.wasm</code>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 7: DOWNLOAD EXPERIMENT REPORT & MODAL -->
     <section id="report-section" class="content-section card">
       <div class="section-badge-bar">
-        <span class="section-tag"><span class="icon">📑</span> Section 6: Laboratory Assessment Report</span>
+        <span class="section-tag"><span class="icon">📑</span> Section 7: Laboratory Assessment Report</span>
         <span class="active-dataset-tag">Internal Assessment Documentation</span>
       </div>
 

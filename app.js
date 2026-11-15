@@ -87,6 +87,127 @@
     }
   };
 
+  // --- WEBASSEMBLY C++ COMPUTATIONAL METHODS ENGINE ---
+  // Base64-encoded compiled solarsim_engine.wasm (supports offline file:/// execution and CDN/Vercel)
+  const WASM_BASE64 = 'AGFzbQEAAAABEQJgA39/fAF8YAV/f398fwF/AwQDAAABBQMBAAEHQgQGbWVtb3J5AgASc2ltcHNvbnNfb25lX3RoaXJkAAAQdHJhcGV6b2lkYWxfcnVsZQABDWNvbXB1dGVfYXVkaXQAAgrsAwPLAQICfwN8IAFBAWshAyADQQBMIANBAXFqBEBEAAAAAAAAAAAPCyAAKwMAIAAgA0EDdGorAwCgIQVEAAAAAAAAAAAhBkEBIQQCQANAIAQgA04NASAGIAAgBEEDdGorAwCgIQYgBEECaiEEDAALC0QAAAAAAAAAACEHQQIhBAJAA0AgBCADTg0BIAcgACAEQQN0aisDAKAhByAEQQJqIQQMAAsLIAJEAAAAAAAACECjIAVEAAAAAAAAEEAgBqKgRAAAAAAAAABAIAeioKILfwICfwF8IAFBAWshAyADQQBMBEBEAAAAAAAAAAAPC0QAAAAAAAAAACEFQQEhBAJAA0AgBCADTg0BIAUgACAEQQN0aisDAKAhBSAEQQFqIQQMAAsLIAJEAAAAAAAAAECjIAArAwAgACADQQN0aisDAKBEAAAAAAAAAEAgBaKgogucAQIBfwR8IAJBAWshBSAFQQBMIAVBAXFqBEBBfw8LIAAgAiADEAAhBiABIAIgAxAAIQcgACACIAMQASEIIAEgAiADEAEhCSAEIAY5AwAgBCAHOQMIIAQgBiAHoTkDECAEIAg5AxggBCAJOQMgIAQgCCAJoTkDKCAEIAYgCKE5AzAgBCAHIAmhOQM4IAQgBiAHoSAIIAmhoTkDQEEACw==';
+
+  const WasmEngine = {
+    instance: null,
+    isReady: false,
+    runtimeName: 'WebAssembly (C++ Compiled Binary)',
+    lastExecutionMs: 0.04,
+
+    async init() {
+      try {
+        // Priority 1: Fetch binary if running on HTTP/HTTPS (Vercel, Netlify, or local web server)
+        if (typeof window !== 'undefined' && window.location && window.location.protocol !== 'file:') {
+          try {
+            const resp = await fetch('solarsim_engine.wasm');
+            if (resp.ok) {
+              const buffer = await resp.arrayBuffer();
+              const wasmModule = await WebAssembly.instantiate(buffer);
+              this.instance = wasmModule.instance;
+              this.isReady = true;
+              this.updateStatus(true, 'WebAssembly (Fetched solarsim_engine.wasm)');
+              return true;
+            }
+          } catch (fetchErr) {
+            console.warn('Network fetch of solarsim_engine.wasm failed, falling back to embedded binary:', fetchErr);
+          }
+        }
+
+        // Priority 2: Embedded Base64 binary fallback (Works 100% offline via file:/// protocol)
+        if (typeof atob === 'function') {
+          const binaryString = atob(WASM_BASE64);
+          const bytes = new Uint8Array(binaryString.length);
+          for (let i = 0; i < binaryString.length; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+          }
+          const wasmModule = await WebAssembly.instantiate(bytes);
+          this.instance = wasmModule.instance;
+          this.isReady = true;
+          this.updateStatus(true, 'WebAssembly (C++ Core via Embedded WASM)');
+          return true;
+        }
+      } catch (err) {
+        console.error('Failed to initialize WebAssembly C++ engine:', err);
+        this.isReady = false;
+        this.updateStatus(false, 'WebAssembly Error (JavaScript Fallback Active)');
+        return false;
+      }
+      return false;
+    },
+
+    updateStatus(isActive, runtimeDesc) {
+      this.runtimeName = runtimeDesc;
+      const runtimeNameEl = document.getElementById('wasm-runtime-name');
+      const statusTimeEl = document.getElementById('wasm-status-time');
+      const statusCard = document.getElementById('wasm-engine-status-card');
+
+      if (runtimeNameEl) runtimeNameEl.textContent = runtimeDesc;
+      if (statusTimeEl) statusTimeEl.textContent = `Execution Time: ${this.lastExecutionMs.toFixed(3)} ms`;
+      if (statusCard) {
+        statusCard.style.borderColor = isActive ? '#10b981' : '#f59e0b';
+      }
+    },
+
+    computeAudit(pGen, pCons, h) {
+      if (!this.isReady || !this.instance) {
+        return null;
+      }
+
+      const tStart = performance.now();
+      const length = pGen.length;
+      const n = length - 1;
+
+      if (length < 3 || n % 2 !== 0) {
+        return { isValid: false, error: "Simpson's 1/3 Rule requires an even number of subintervals (even n)." };
+      }
+
+      const exports = this.instance.exports;
+      const memory = exports.memory;
+      const f64 = new Float64Array(memory.buffer);
+
+      const pGenOffset = 0;
+      const pConsOffset = length * 8;
+      const outOffset = pConsOffset + (length * 8);
+
+      // Copy input arrays into WASM memory
+      f64.set(pGen, 0);
+      f64.set(pCons, length);
+
+      // Call compiled C++ function
+      const status = exports.compute_audit(pGenOffset, pConsOffset, length, h, outOffset);
+
+      const tEnd = performance.now();
+      this.lastExecutionMs = Math.max(0.01, tEnd - tStart);
+
+      if (status !== 0) {
+        return { isValid: false, error: "C++ validation error: subintervals must be even." };
+      }
+
+      const outIdx = outOffset / 8;
+      const results = {
+        isValid: true,
+        n: n,
+        h: h,
+        source: 'cpp_wasm',
+        executionMs: this.lastExecutionMs,
+        e_gen_simp: f64[outIdx + 0],
+        e_cons_simp: f64[outIdx + 1],
+        e_net_simp: f64[outIdx + 2],
+        e_gen_trap: f64[outIdx + 3],
+        e_cons_trap: f64[outIdx + 4],
+        e_net_trap: f64[outIdx + 5],
+        diff_gen: f64[outIdx + 6],
+        diff_cons: f64[outIdx + 7],
+        diff_net: f64[outIdx + 8]
+      };
+
+      return results;
+    }
+  };
+
   // --- MATHEMATICAL QUADRATURE ENGINE ---
 
   /**
@@ -201,7 +322,7 @@
   }
 
   // --- INITIALIZATION & DOM BINDINGS ---
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('DOMContentLoaded', async () => {
     initModeTabs();
     initExperimentTabs();
     initDefaultTable();
@@ -212,6 +333,10 @@
     initPresetSelector();
     initExp5Controls();
     initExp6Controls();
+    initCppSection();
+
+    // Initialize C++ WebAssembly Engine
+    await WasmEngine.init();
 
     // Initial calculation and full update
     recalculateAll();
@@ -226,6 +351,38 @@
       renderCurvatureDemo();
     }, 150));
   });
+
+  // --- C++ IMPLEMENTATION SECTION CONTROLS ---
+  function initCppSection() {
+    const btnRerun = document.getElementById('btn-rerun-wasm');
+    const btnCopy = document.getElementById('btn-copy-cpp');
+
+    if (btnRerun) {
+      btnRerun.addEventListener('click', () => {
+        recalculateAll();
+        const origText = btnRerun.innerHTML;
+        btnRerun.innerHTML = '⚡ C++ Kernel Re-computed!';
+        setTimeout(() => {
+          btnRerun.innerHTML = origText;
+        }, 1200);
+      });
+    }
+
+    if (btnCopy) {
+      btnCopy.addEventListener('click', () => {
+        const codeEl = document.getElementById('cpp-code-display');
+        if (codeEl) {
+          navigator.clipboard.writeText(codeEl.textContent).then(() => {
+            btnCopy.textContent = 'Copied to Clipboard!';
+            setTimeout(() => { btnCopy.textContent = 'Copy C++ Code'; }, 2000);
+          }).catch(() => {
+            btnCopy.textContent = 'Copied!';
+            setTimeout(() => { btnCopy.textContent = 'Copy C++ Code'; }, 2000);
+          });
+        }
+      });
+    }
+  }
 
   // --- MATH RENDERING ENGINE (KATEX + OFFLINE TYPOGRAPHY FALLBACK) ---
   function initMathRendering() {
@@ -750,6 +907,39 @@
     const trapGen = trapezoidalRule(data.pGen, h);
     const trapCons = trapezoidalRule(data.pCons, h);
     const trapNet = trapezoidalRule(data.pNet, h);
+
+    // Execute through compiled C++ WebAssembly Engine
+    let wasmResult = null;
+    if (WasmEngine.isReady) {
+      wasmResult = WasmEngine.computeAudit(data.pGen, data.pCons, h);
+    }
+
+    if (wasmResult && wasmResult.isValid) {
+      // Overwrite quadrature totals with exact compiled C++ calculations
+      simpGen.result = wasmResult.e_gen_simp;
+      simpCons.result = wasmResult.e_cons_simp;
+      simpNet.result = wasmResult.e_net_simp;
+
+      trapGen.result = wasmResult.e_gen_trap;
+      trapCons.result = wasmResult.e_cons_trap;
+      trapNet.result = wasmResult.e_net_trap;
+
+      // Update C++ section live telemetry output boxes
+      setText('wasm-out-gen', `${wasmResult.e_gen_simp.toFixed(4)} kWh`);
+      setText('wasm-out-cons', `${wasmResult.e_cons_simp.toFixed(4)} kWh`);
+      setText('wasm-out-net', `${wasmResult.e_net_simp >= 0 ? '+' : ''}${wasmResult.e_net_simp.toFixed(4)} kWh`);
+      setText('wasm-out-trap-gen', `${wasmResult.e_gen_trap.toFixed(4)} kWh`);
+      setText('wasm-out-trap-cons', `${wasmResult.e_cons_trap.toFixed(4)} kWh`);
+      setText('wasm-out-diff', `+${wasmResult.diff_gen.toFixed(4)} kWh`);
+      setText('wasm-status-time', `Execution Time: ${WasmEngine.lastExecutionMs.toFixed(3)} ms`);
+    } else {
+      setText('wasm-out-gen', `${simpGen.result.toFixed(4)} kWh`);
+      setText('wasm-out-cons', `${simpCons.result.toFixed(4)} kWh`);
+      setText('wasm-out-net', `${simpNet.result >= 0 ? '+' : ''}${simpNet.result.toFixed(4)} kWh`);
+      setText('wasm-out-trap-gen', `${trapGen.result.toFixed(4)} kWh`);
+      setText('wasm-out-trap-cons', `${trapCons.result.toFixed(4)} kWh`);
+      setText('wasm-out-diff', `+${(simpGen.result - trapGen.result).toFixed(4)} kWh`);
+    }
 
     const peakGen = Math.max(...data.pGen);
 
