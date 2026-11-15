@@ -1,0 +1,1311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SolarSim — Numerical Integration of Solar PV Energy & Consumption (Simpson's 1/3 Rule)</title>
+  <meta name="description" content="Interactive Virtual Laboratory for Numerical Integration of Solar Panel Energy Output and Building Consumption using Composite Simpson's 1/3 Rule.">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&family=Merriweather:ital,wght@0,400;0,700;1,300&display=swap" rel="stylesheet">
+  <!-- KaTeX for academic math typesetting (with automatic offline fallback) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
+</head>
+<body>
+  <!-- Academic Lab Banner / Header -->
+  <header class="top-nav">
+    <div class="nav-container">
+      <div class="brand">
+        <div class="brand-logo">
+          <svg viewBox="0 0 32 32" fill="none" class="sun-icon">
+            <circle cx="16" cy="16" r="6" fill="#F59E0B" />
+            <path d="M16 2V6M16 26V30M2 16H6M26 16H30M6.1 6.1L8.9 8.9M23.1 23.1L25.9 25.9M6.1 25.9L8.9 23.1M23.1 8.9L25.9 6.1" stroke="#F59E0B" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <div class="brand-title">SolarSim <span class="badge badge-accent">Virtual Lab v2.5</span></div>
+          <div class="brand-subtitle">Computational Methods Laboratory • Simpson's 1/3 Rule Engineering Simulator</div>
+        </div>
+      </div>
+      
+      <div class="nav-links">
+        <a href="#problem-section" class="nav-item">1. The Problem</a>
+        <a href="#why-not-addition" class="nav-item">2. Why Not Simple Addition?</a>
+        <a href="#method-section" class="nav-item">3. Simpson's 1/3 Rule</a>
+        <a href="#data-mode-section" class="nav-item">4. Active Data & Modes</a>
+        <a href="#experiments-section" class="nav-item highlight">5. Virtual Laboratory</a>
+        <a href="#comparative-audit" class="nav-item">6. Comparative Audit</a>
+        <button id="btn-print-report" class="btn btn-outline-sm">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/></svg>
+          Lab Report
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Learning Journey Progress Tracker -->
+  <nav class="learning-tracker" aria-label="Learning Journey Roadmap">
+    <div class="tracker-inner">
+      <span class="tracker-title">Learning Journey:</span>
+      <div class="tracker-steps">
+        <a href="#problem-section" class="step-badge active"><span class="step-num">1</span> Real-World Problem</a>
+        <a href="#why-not-addition" class="step-badge"><span class="step-num">2</span> Why Integration?</a>
+        <a href="#method-section" class="step-badge"><span class="step-num">3</span> Simpson's 1/3 Rule</a>
+        <a href="#data-mode-section" class="step-badge"><span class="step-num">4</span> Default vs Custom Data</a>
+        <a href="#experiments-section" class="step-badge"><span class="step-num">5</span> Run 6 Experiments</a>
+        <a href="#comparative-audit" class="step-badge"><span class="step-num">6</span> Simpson vs Trapezoidal</a>
+        <a href="#results-meaning" class="step-badge"><span class="step-num">7</span> Engineering Meaning</a>
+        <a href="#report-section" class="step-badge"><span class="step-num">8</span> Download Report</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="main-content">
+
+    <!-- HERO / TITLE BANNER -->
+    <section class="hero-banner">
+      <div class="hero-content">
+        <div class="hero-tags">
+          <span class="tag tag-gold"><span class="pulse-dot"></span> 10 kW Academic Solar PV Array</span>
+          <span class="tag tag-blue">Composite Simpson's 1/3 Rule: \(\mathcal{O}(h^4)\)</span>
+          <span class="tag tag-teal">Interactive Virtual Laboratory</span>
+        </div>
+        <h1 class="hero-heading">Numerical Integration of Solar Panel Energy Output & Building Consumption</h1>
+        <p class="hero-lead">
+          A practical engineering application of <strong>Composite Quadratic Quadrature</strong> to discrete photovoltaic power telemetry.
+          Simulate, integrate, and verify energy balances across daylight cycles with real-time mathematical rigor.
+        </p>
+        <div class="hero-actions">
+          <a href="#experiments-section" class="btn btn-primary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Launch Virtual Laboratory
+          </a>
+          <a href="#problem-section" class="btn btn-secondary">
+            Explore Problem Formulation
+          </a>
+          <button id="btn-quick-default" class="btn btn-ghost">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 019-9 9.75 9.75 0 016.74 2.74L21 8M21 3v5h-5M21 12a9 9 0 01-9 9 9.75 9.75 0 01-6.74-2.74L3 16M3 21v-5h5"/></svg>
+            Load Project Report Data
+          </button>
+        </div>
+      </div>
+
+      <div class="hero-kpis">
+        <div class="kpi-card kpi-amber">
+          <div class="kpi-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          </div>
+          <div class="kpi-body">
+            <div class="kpi-label">Total Generated Energy (\(E_{\text{gen}}\))</div>
+            <div class="kpi-value" id="kpi-hero-gen">62.9667 <span class="unit">kWh</span></div>
+            <div class="kpi-sub">Composite Simpson's 1/3 (\(h=1.0\text{ h}\))</div>
+          </div>
+        </div>
+
+        <div class="kpi-card kpi-blue">
+          <div class="kpi-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          </div>
+          <div class="kpi-body">
+            <div class="kpi-label">Total Consumed Energy (\(E_{\text{cons}}\))</div>
+            <div class="kpi-value" id="kpi-hero-cons">46.3000 <span class="unit">kWh</span></div>
+            <div class="kpi-sub">Academic Building Load Profile</div>
+          </div>
+        </div>
+
+        <div class="kpi-card kpi-green">
+          <div class="kpi-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+          </div>
+          <div class="kpi-body">
+            <div class="kpi-label">Net Energy Balance (\(E_{\text{net}}\))</div>
+            <div class="kpi-value" id="kpi-hero-net">+16.6667 <span class="unit">kWh</span></div>
+            <div class="kpi-sub"><span class="badge badge-success">Surplus Exported to Grid</span></div>
+          </div>
+        </div>
+
+        <div class="kpi-card kpi-purple">
+          <div class="kpi-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </div>
+          <div class="kpi-body">
+            <div class="kpi-label">Peak Solar Power (\(P_{\text{peak}}\))</div>
+            <div class="kpi-value" id="kpi-hero-peak">9.40 <span class="unit">kW</span></div>
+            <div class="kpi-sub">Recorded at Solar Noon (12:00)</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 1: WHAT PROBLEM ARE WE SOLVING? -->
+    <section id="problem-section" class="content-section card">
+      <div class="section-badge-bar">
+        <span class="section-tag"><span class="icon">🔍</span> Section 1: Problem Formulation</span>
+        <span class="active-dataset-tag">Active Data: <strong id="lbl-active-mode-1">Default Report Dataset</strong></span>
+      </div>
+      
+      <h2 class="section-title">What Problem Are We Solving?</h2>
+      
+      <div class="explanation-box quote-style">
+        <div class="quote-icon">“</div>
+        <p class="lead-quote">
+          Solar panels produce different amounts of electrical power throughout the day. Their output increases during the morning, usually reaches its highest level around midday, and decreases toward sunset.
+        </p>
+        <p class="lead-quote">
+          However, knowing the power generated at individual moments does not directly tell us how much total electrical energy was produced during the day.
+        </p>
+        <p class="lead-quote">
+          Similarly, a building consumes different amounts of electricity at different times.
+        </p>
+        <p class="lead-quote">
+          Our challenge is to calculate the total energy generated by solar panels, the total energy consumed by the building, and the net energy balance using power readings recorded at regular intervals.
+        </p>
+        <p class="lead-quote">
+          To solve this problem, we use <strong>Simpson's 1/3 Rule</strong>, a numerical integration technique that estimates the area under a power-versus-time curve.
+        </p>
+      </div>
+
+      <!-- Fundamental Relationship Display -->
+      <div class="formula-banner">
+        <div class="formula-title">The Fundamental Physical Relationship:</div>
+        <div class="math-display">
+          $$\text{Energy (kWh)} = \int_{t_{\text{start}}}^{t_{\text{end}}} P(t) \, dt \quad \equiv \quad \text{Area under the Power-versus-Time Curve}$$
+        </div>
+        <div class="formula-notes">
+          Where \(P(t)\) is instantaneous power measured in kilowatts (kW) and \(t\) is time elapsed in hours (h).
+          Because SCADA sensors log discrete telemetry samples \(\{P(t_0), P(t_1), \dots, P(t_n)\}\), the exact continuous integral must be evaluated numerically.
+        </div>
+      </div>
+
+      <!-- Interactive Animated Solar Power Curve -->
+      <div class="simulation-widget">
+        <div class="widget-header">
+          <div class="widget-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+            Live Diurnal Solar Arc & Area Integration Visualizer
+          </div>
+          <div class="widget-controls">
+            <button id="btn-toggle-anim" class="btn btn-sm btn-accent">
+              <span id="anim-icon">▶</span> <span id="anim-text">Play Solar Path</span>
+            </button>
+            <button id="btn-reset-anim" class="btn btn-sm btn-ghost">Reset Time</button>
+          </div>
+        </div>
+
+        <div class="canvas-container">
+          <canvas id="animated-solar-canvas" width="900" height="320" aria-label="Animated Solar Power Curve with Shaded Energy Area"></canvas>
+        </div>
+
+        <div class="time-scrubber-bar">
+          <div class="scrubber-label">
+            <span>Sunrise (06:00)</span>
+            <span class="scrubber-current">Current Sim Time: <strong id="lbl-sim-time">12:00 (Solar Noon)</strong> | Instant Power: <strong id="lbl-sim-power">9.40 kW</strong> | Cumulative Energy: <strong id="lbl-sim-energy">32.15 kWh</strong></span>
+            <span>Sunset (18:00)</span>
+          </div>
+          <input type="range" id="time-slider" min="6" max="18" step="0.05" value="12" class="range-slider">
+        </div>
+      </div>
+
+      <!-- SECTION: WHY CAN'T WE SIMPLY ADD THE POWER READINGS? -->
+      <div id="why-not-addition" class="sub-card alert-info-box">
+        <div class="alert-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+        <div class="alert-content">
+          <h3 class="alert-title">Why Can't We Simply Add the Power Readings?</h3>
+          <p>
+            A common misconception in energy auditing is that one can simply take the sum of all instantaneous power numbers recorded by an instrument.
+            <strong>This is physically and dimensionally incorrect:</strong>
+          </p>
+          <ul class="styled-list">
+            <li>
+              <strong>Incompatible Physical Dimensions:</strong> Instantaneous power readings are measured in <strong>kilowatts (kW)</strong>, which represent the rate of energy transfer at a single split second (\(1\text{ kW} = 1000\text{ Joules per second}\)).
+              Cumulative electrical energy is measured in <strong>kilowatt-hours (kWh)</strong> (\(1\text{ kWh} = 3.6 \times 10^6\text{ Joules}\)).
+              Summing raw numbers produces \(\text{kW} + \text{kW} + \dots = \text{kW}\), not \(\text{kWh}\)!
+            </li>
+            <li>
+              <strong>Accounting for Time Interval (\(h = \Delta t\)):</strong> If sensors record readings every 1 hour, every 15 minutes, or every 5 minutes, each reading governs a specific temporal width.
+              Simply adding readings without multiplying by \(\Delta t\) completely distorts the result depending on sampling frequency!
+            </li>
+            <li>
+              <strong>Curvature and the Inadequacy of Rectangles:</strong> Even if one multiplies by \(\Delta t\) (\(\sum P(t_i) \Delta t\)), that corresponds to a crude Left or Right Riemann rectangle approximation.
+              Because physical solar generation follows a <em>smooth, continuous bell-shaped trajectory</em>, rectangle approximations introduce severe truncation errors.
+              We must account for the continuous time evolution between measurements, which <strong>Simpson's 1/3 Rule</strong> accomplishes with quadratic (\(\mathcal{O}(h^4)\)) precision.
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: WHY WE CHOSE SIMPSON'S 1/3 RULE -->
+    <section id="method-section" class="content-section card">
+      <div class="section-badge-bar">
+        <span class="section-tag"><span class="icon">📐</span> Section 2: Mathematical Foundation</span>
+        <span class="active-dataset-tag">Method: <strong>Quadratic Newton-Cotes Quadrature</strong></span>
+      </div>
+
+      <h2 class="section-title">Why We Chose Simpson's 1/3 Rule</h2>
+
+      <div class="method-grid">
+        <div class="method-card">
+          <div class="method-card-header">
+            <span class="method-pill">Quadratic Interpolant</span>
+            <h3>Parabolic Approximation</h3>
+          </div>
+          <p>
+            Unlike the <strong>Trapezoidal Rule</strong>, which connects adjacent readings with straight line chords (linear polynomials, degree 1),
+            <strong>Simpson's 1/3 Rule</strong> fits a second-degree polynomial (parabola, \(y = At^2 + Bt + C\)) through every triplet of consecutive data points:
+          </p>
+          <div class="math-box-sm">
+            $$\int_{x_{2k}}^{x_{2k+2}} P(t) \, dt \approx \frac{h}{3}\left[P(t_{2k}) + 4P(t_{2k+1}) + P(t_{2k+2})\right]$$
+          </div>
+          <p>
+            Because clear-sky solar irradiance curves exhibit smooth parabolic curvature, quadratic arcs conform to the physical bell curve far better than straight chords.
+          </p>
+        </div>
+
+        <div class="method-card">
+          <div class="method-card-header">
+            <span class="method-pill pill-gold">Fourth-Order Accuracy</span>
+            <h3>Truncation Error & Convergence: \(\mathcal{O}(h^4)\)</h3>
+          </div>
+          <p>
+            The global truncation error of Composite Simpson's 1/3 Rule over \([a, b]\) is strictly bounded by:
+          </p>
+          <div class="math-box-sm">
+            $$E_S = - \frac{(b - a) h^4}{180} \, f^{(4)}(\xi), \quad \xi \in (a, b)$$
+          </div>
+          <p>
+            Because the error decays as \(h^4\), <strong>halving the sampling interval reduces the integration error by a factor of \(2^4 = 16\)</strong>.
+            Furthermore, for any cubic function (\(f^{(4)} = 0\)), Simpson's 1/3 Rule yields the <em>exact analytical integral</em>!
+          </p>
+        </div>
+      </div>
+
+      <!-- Composite Formula & Alternating Weights Visualizer -->
+      <div class="composite-formula-container">
+        <h3 class="subsection-title">The Composite Simpson's 1/3 Formula</h3>
+        <p class="formula-desc">
+          When integrating across \(n\) equal subintervals of width \(h = \frac{b - a}{n}\), the composite quadrature formula is:
+        </p>
+
+        <div class="formula-callout-hero">
+          $$\int_a^b f(x) \, dx \approx \frac{h}{3} \left[ y_0 + y_n + 4 \sum_{i=1, 3, 5}^{n-1} y_i + 2 \sum_{i=2, 4, 6}^{n-2} y_i \right]$$
+        </div>
+
+        <div class="weights-explanation">
+          <h4>Visual Explanation of the Alternating Quadrature Weights:</h4>
+          <div class="weights-strip" id="weights-strip-display">
+            <!-- Dynamically populated or static visual pills -->
+            <div class="weight-cell end"><span class="w-val">1</span><span class="w-idx">y₀ (06:00)</span></div>
+            <div class="weight-cell odd"><span class="w-val">4</span><span class="w-idx">y₁ (07:00)</span></div>
+            <div class="weight-cell even"><span class="w-val">2</span><span class="w-idx">y₂ (08:00)</span></div>
+            <div class="weight-cell odd"><span class="w-val">4</span><span class="w-idx">y₃ (09:00)</span></div>
+            <div class="weight-cell even"><span class="w-val">2</span><span class="w-idx">y₄ (10:00)</span></div>
+            <div class="weight-cell odd"><span class="w-val">4</span><span class="w-idx">y₅ (11:00)</span></div>
+            <div class="weight-cell even"><span class="w-val">2</span><span class="w-idx">y₆ (12:00)</span></div>
+            <div class="weight-cell odd"><span class="w-val">4</span><span class="w-idx">y₇ (13:00)</span></div>
+            <div class="weight-cell even"><span class="w-val">2</span><span class="w-idx">y₈ (14:00)</span></div>
+            <div class="weight-cell odd"><span class="w-val">4</span><span class="w-idx">y₉ (15:00)</span></div>
+            <div class="weight-cell even"><span class="w-val">2</span><span class="w-idx">y₁₀ (16:00)</span></div>
+            <div class="weight-cell odd"><span class="w-val">4</span><span class="w-idx">y₁₁ (17:00)</span></div>
+            <div class="weight-cell end"><span class="w-val">1</span><span class="w-idx">y₁₂ (18:00)</span></div>
+          </div>
+
+          <div class="why-weights-grid">
+            <div class="why-item">
+              <strong>Endpoints (Weight = 1):</strong> \(y_0\) and \(y_n\) belong only to the very first and very last parabolic sub-segment respectively.
+            </div>
+            <div class="why-item">
+              <strong>Interior Odd Indices (Weight = 4):</strong> Points \(y_1, y_3, y_5, \dots\) serve as the interior midpoints of each parabola and receive the single-rule coefficient 4.
+            </div>
+            <div class="why-item">
+              <strong>Interior Even Indices (Weight = 2):</strong> Boundary points \(y_2, y_4, y_6, \dots\) connect two adjacent parabolic segments. Their weights add: \(1 + 1 = 2\).
+            </div>
+          </div>
+        </div>
+
+        <div class="even-requirement-box">
+          <div class="req-icon">⚠️</div>
+          <div class="req-text">
+            <strong>Why Must the Number of Subintervals \(n\) Be Even?</strong>
+            <p>
+              Each elementary Simpson parabola spans across <strong>two adjacent subintervals</strong>: \([x_0, x_2]\), \([x_2, x_4]\), \dots, \([x_{n-2}, x_n]\).
+              Therefore, for \(m\) total parabolas, the total number of subintervals must be \(n = 2m\), which is <strong>strictly an even integer</strong>.
+              Consequently, the number of recorded telemetry observations \(N\) must be <strong>odd</strong> (\(N = n + 1\)).
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Interactive Comparison: Simpson's Rule vs Trapezoidal Rule -->
+      <div class="trapezoidal-comparison-box">
+        <h3 class="subsection-title">Interactive Comparison: Simpson's 1/3 Rule vs. Trapezoidal Rule</h3>
+        <p>
+          Both methods approximate the definite integral of discrete data, but their geometric mechanics differ fundamentally:
+        </p>
+
+        <div class="comparison-dual-cards">
+          <div class="rule-card">
+            <div class="rule-title">Composite Trapezoidal Rule</div>
+            <div class="rule-formula">\(\int_a^b f(x) dx \approx \frac{h}{2} \left[ y_0 + y_n + 2 \sum_{i=1}^{n-1} y_i \right]\)</div>
+            <div class="rule-specs">
+              <span class="spec-tag">Polynomial Degree: <strong>1 (Linear)</strong></span>
+              <span class="spec-tag">Truncation Error: <strong>\(\mathcal{O}(h^2)\)</strong></span>
+              <span class="spec-tag">Constraint: <strong>Any \(n \ge 1\)</strong></span>
+            </div>
+            <p class="rule-behavior">
+              Connects points with straight chords. On concave-down curves (\(f''(t) < 0\)), straight chords lie <em>strictly below</em> the actual curve, creating <strong>systematic underestimation</strong>.
+            </p>
+          </div>
+
+          <div class="rule-card rule-card-simpson">
+            <div class="rule-title">Composite Simpson's 1/3 Rule</div>
+            <div class="rule-formula">\(\int_a^b f(x) dx \approx \frac{h}{3} \left[ y_0 + y_n + 4 \sum_{\text{odd}} y_i + 2 \sum_{\text{even}} y_i \right]\)</div>
+            <div class="rule-specs">
+              <span class="spec-tag">Polynomial Degree: <strong>2 (Quadratic)</strong></span>
+              <span class="spec-tag">Truncation Error: <strong>\(\mathcal{O}(h^4)\)</strong></span>
+              <span class="spec-tag">Constraint: <strong>\(n\) must be even</strong></span>
+            </div>
+            <p class="rule-behavior">
+              Fits quadratic parabolas across pairs of subintervals. Arches upward along with the natural diurnal solar curve, recovering the area missed by straight trapezoidal chords.
+            </p>
+          </div>
+        </div>
+
+        <div class="curvature-demo-widget">
+          <div class="widget-subtitle">Visual Demonstration of Curvature Capture on Midday Solar Peak:</div>
+          <div class="canvas-container-sm">
+            <canvas id="curvature-demo-canvas" width="850" height="240" aria-label="Visual Curvature Comparison: Parabolic Arc vs Linear Chord"></canvas>
+          </div>
+          <div class="curvature-caption">
+            <strong>Key Engineering Finding:</strong> Notice how the straight trapezoid chord creates a triangular gap below the solar curve, losing \(\approx 0.0667\text{ kWh}\) of generated energy. Simpson's parabolic arch tracks the true curve with high fidelity.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: TWO MODES — DEFAULT AND CUSTOM DATA -->
+    <section id="data-mode-section" class="content-section card">
+      <div class="section-badge-bar">
+        <span class="section-tag"><span class="icon">⚙️</span> Section 3: Telemetry Data Management</span>
+        <span class="active-dataset-tag" id="active-mode-badge"><span class="status-indicator"></span> Current Mode: <strong>Mode A (Default Data)</strong></span>
+      </div>
+
+      <div class="mode-selector-header">
+        <div>
+          <h2 class="section-title">Telemetry Mode Selector</h2>
+          <p class="section-subtitle">
+            Choose whether to run experiments with our benchmark academic laboratory dataset or supply your own custom solar readings.
+          </p>
+        </div>
+        <div class="mode-toggle-group" role="tablist">
+          <button id="tab-mode-default" class="mode-btn active" role="tab" aria-selected="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+            Mode A: Use Default Data
+          </button>
+          <button id="tab-mode-custom" class="mode-btn" role="tab" aria-selected="false">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Mode B: Enter Your Own Data
+          </button>
+        </div>
+      </div>
+
+      <!-- MODE A PANEL (DEFAULT DATA) -->
+      <div id="panel-mode-default" class="mode-panel active">
+        <div class="dataset-info-banner">
+          <div class="banner-badge">Benchmark Dataset</div>
+          <div class="banner-body">
+            <strong>Illustrative Sample Data:</strong> 10 kW Peak Rooftop Solar PV Installation & Academic Laboratory Demand.
+            Recorded from <strong>06:00 to 18:00</strong> with uniform hourly sampling interval (\(h = 1.0\text{ h}\), \(n = 12\) subintervals, 13 data points).
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table class="data-table" id="default-data-table">
+            <thead>
+              <tr>
+                <th>Index (\(i\))</th>
+                <th>Time of Day</th>
+                <th>Hour (\(t_i\))</th>
+                <th>Simpson Weight (\(w_i\))</th>
+                <th>Solar Gen \(P_{\text{gen}}\) (kW)</th>
+                <th>Building Load \(P_{\text{cons}}\) (kW)</th>
+                <th>Net Power \(P_{\text{net}}\) (kW)</th>
+                <th>Operational Regime</th>
+              </tr>
+            </thead>
+            <tbody id="default-table-body">
+              <!-- Dynamically populated from JS default array -->
+            </tbody>
+            <tfoot>
+              <tr class="table-summary-row">
+                <td colspan="4"><strong>Summary Quadrature Integration:</strong></td>
+                <td id="td-sum-gen"><strong>62.9667 kWh</strong></td>
+                <td id="td-sum-cons"><strong>46.3000 kWh</strong></td>
+                <td id="td-sum-net"><strong>+16.6667 kWh</strong></td>
+                <td><span class="badge badge-success">Overall Surplus</span></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      <!-- MODE B PANEL (CUSTOM DATA) -->
+      <div id="panel-mode-custom" class="mode-panel">
+        <div class="custom-toolbar">
+          <div class="toolbar-section">
+            <label class="control-label">Start Time:</label>
+            <input type="time" id="custom-start-time" value="06:00" class="input-control">
+          </div>
+
+          <div class="toolbar-section">
+            <label class="control-label">Sampling Interval (\(h\)):</label>
+            <select id="custom-h-select" class="input-control">
+              <option value="0.5">0.5 hour (30 min)</option>
+              <option value="1.0" selected>1.0 hour (60 min)</option>
+              <option value="2.0">2.0 hours (120 min)</option>
+            </select>
+          </div>
+
+          <div class="toolbar-section">
+            <label class="control-label">Quick Presets:</label>
+            <select id="preset-select" class="input-control">
+              <option value="default">Default Report Data (12h, 10kW)</option>
+              <option value="summer">High Irradiance Summer Day</option>
+              <option value="winter">Winter Short Day Profile</option>
+              <option value="cloudy">Overcast Cloudy Pattern</option>
+              <option value="industrial">Heavy Commercial Load</option>
+            </select>
+          </div>
+
+          <div class="toolbar-actions">
+            <button id="btn-add-row" class="btn btn-sm btn-outline">+ Add Point</button>
+            <button id="btn-remove-row" class="btn btn-sm btn-outline">- Remove Point</button>
+            <label class="btn btn-sm btn-secondary file-upload-btn">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+              Upload CSV
+              <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
+            </label>
+            <button id="btn-download-csv" class="btn btn-sm btn-ghost">Download CSV</button>
+            <button id="btn-reset-custom" class="btn btn-sm btn-danger-ghost">Reset to Default Data</button>
+          </div>
+        </div>
+
+        <!-- Validation Message Box -->
+        <div id="custom-validation-box" class="validation-message-box" style="display: none;">
+          <div class="val-icon">⚠️</div>
+          <div class="val-text" id="custom-val-text">
+            Simpson's 1/3 Rule requires at least 3 points and an even number of subintervals.
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table class="data-table editable-table" id="custom-data-table">
+            <thead>
+              <tr>
+                <th>Index (\(i\))</th>
+                <th>Time</th>
+                <th>Hour (\(t_i\))</th>
+                <th>Simpson Weight (\(w_i\))</th>
+                <th>Solar Gen \(P_{\text{gen}}\) (kW)</th>
+                <th>Building Load \(P_{\text{cons}}\) (kW)</th>
+                <th>Net Power \(P_{\text{net}}\) (kW)</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="custom-table-body">
+              <!-- Dynamically populated from JS custom array -->
+            </tbody>
+            <tfoot>
+              <tr class="table-summary-row">
+                <td colspan="4"><strong>Live Calculated Energy:</strong></td>
+                <td id="td-custom-sum-gen"><strong>0.0000 kWh</strong></td>
+                <td id="td-custom-sum-cons"><strong>0.0000 kWh</strong></td>
+                <td id="td-custom-sum-net"><strong>0.0000 kWh</strong></td>
+                <td>-</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        <p class="table-hint">
+          💡 <em>Tip: You can edit any Solar Generation or Building Load cell directly. Net power, calculations, and graphs recalculate instantly.</em>
+        </p>
+      </div>
+    </section>
+
+    <!-- SECTION 4: VIRTUAL LABORATORY (ALL 6 EXPERIMENTS) -->
+    <section id="experiments-section" class="content-section card">
+      <div class="section-badge-bar">
+        <span class="section-tag"><span class="icon">🔬</span> Section 4: Experimental Simulation Suite</span>
+        <span class="active-dataset-tag">All 6 Experiments Live-Synced with Active Mode</span>
+      </div>
+
+      <div class="experiments-header">
+        <h2 class="section-title">Virtual Laboratory Experiments</h2>
+        <p class="section-subtitle">
+          Execute each formal computational experiment. Every experiment provides complete step-by-step arithmetic, interactive graphs, observations, and physical interpretations.
+        </p>
+
+        <!-- Experiment Selector Tabs -->
+        <div class="exp-tabs-nav" role="tablist">
+          <button class="exp-tab-btn active" data-exp="1">Exp 1: Solar Generation</button>
+          <button class="exp-tab-btn" data-exp="2">Exp 2: Building Demand</button>
+          <button class="exp-tab-btn" data-exp="3">Exp 3: Generation vs Demand</button>
+          <button class="exp-tab-btn" data-exp="4">Exp 4: Simpson vs Trapezoidal</button>
+          <button class="exp-tab-btn" data-exp="5">Exp 5: Sampling Step & Convergence</button>
+          <button class="exp-tab-btn" data-exp="6">Exp 6: Weather Scenarios</button>
+        </div>
+      </div>
+
+      <!-- EXPERIMENT 1 -->
+      <div id="exp-panel-1" class="experiment-panel active">
+        <div class="exp-header-banner exp-amber">
+          <div class="exp-number">EXPERIMENT 1</div>
+          <h3 class="exp-heading">Numerical Integration of Solar Energy Generation (\(E_{\text{gen}}\))</h3>
+        </div>
+
+        <div class="exp-meta-grid">
+          <div class="exp-meta-item">
+            <span class="meta-label">Aim:</span>
+            <p>To evaluate total electrical energy harvested by the photovoltaic solar array over the daylight interval using Composite Simpson's 1/3 Rule.</p>
+          </div>
+          <div class="exp-meta-item">
+            <span class="meta-label">Problem Being Solved:</span>
+            <p>Integrating discrete solar power readings \(P_{\text{gen}}(t)\) from sunrise to sunset to determine gross electrical output in kilowatt-hours (kWh).</p>
+          </div>
+          <div class="exp-meta-item">
+            <span class="meta-label">Input Data:</span>
+            <p id="exp1-input-summary">12 subintervals (\(h = 1.0\text{ h}\)), 13 power ordinates from 06:00 to 18:00.</p>
+          </div>
+          <div class="exp-meta-item">
+            <span class="meta-label">Mathematical Method:</span>
+            <p>Composite Simpson's 1/3 Rule: \(E_{\text{gen}} = \frac{h}{3}[P_0 + P_n + 4\sum P_{\text{odd}} + 2\sum P_{\text{even}}]\)</p>
+          </div>
+        </div>
+
+        <div class="exp-graph-container">
+          <div class="graph-header">
+            <h4>Interactive Solar Power Curve \(P_{\text{gen}}(t)\) with Shaded Area</h4>
+            <span class="badge badge-accent">Peak: <strong id="exp1-graph-peak">9.40 kW</strong></span>
+          </div>
+          <div class="canvas-container">
+            <canvas id="canvas-exp1" width="900" height="340"></canvas>
+          </div>
+        </div>
+
+        <div class="step-calculation-card">
+          <h4>Step-by-Step Hand Calculation Breakdown</h4>
+          <div class="calc-steps" id="exp1-calc-steps">
+            <!-- Dynamically populated step arithmetic -->
+          </div>
+        </div>
+
+        <div class="exp-result-callout">
+          <div class="res-title">Final Result:</div>
+          <div class="res-val" id="exp1-final-result">62.9667 kWh</div>
+          <div class="res-desc">Total Solar Energy Generated over the 12-Hour Observation Period.</div>
+        </div>
+
+        <div class="exp-analysis-grid">
+          <div class="analysis-card">
+            <h4>Physical Observation</h4>
+            <p id="exp1-observation">
+              The solar generation trajectory is smoothly unimodal, exhibiting near-zero generation at dawn (0.20 kW), climbing steadily during morning hours, peaking at 9.40 kW at solar noon (12:00), and symmetrically declining toward sunset.
+            </p>
+          </div>
+          <div class="analysis-card">
+            <h4>Engineering Conclusion</h4>
+            <p id="exp1-conclusion">
+              Composite Simpson's 1/3 Rule accurately integrates the bell-shaped diurnal trajectory. Because the curve is predominantly concave-down (\(P''(t) < 0\)), Simpson's parabolic arches recover energy that would be truncated by linear interpolation.
+            </p>
+          </div>
+        </div>
+
+        <!-- WHAT DOES THIS RESULT MEAN? -->
+        <div class="meaning-box">
+          <div class="meaning-header">
+            <span class="meaning-badge">Insight</span>
+            <h4>What Does This Result Mean?</h4>
+          </div>
+          <p id="exp1-meaning">
+            The solar installation generated approximately <strong>62.97 kWh</strong> of electrical energy during the 12-hour observation period.
+            This represents the total direct-current (DC) to alternating-current (AC) energy harvested by the 10 kW rooftop array, sufficient to power standard laboratory equipment, servers, and lighting.
+          </p>
+        </div>
+      </div>
+
+      <!-- EXPERIMENT 2 -->
+      <div id="exp-panel-2" class="experiment-panel">
+        <div class="exp-header-banner exp-blue">
+          <div class="exp-number">EXPERIMENT 2</div>
+          <h3 class="exp-heading">Numerical Integration of Building Electrical Consumption (\(E_{\text{cons}}\))</h3>
+        </div>
+
+        <div class="exp-meta-grid">
+          <div class="exp-meta-item">
+            <span class="meta-label">Aim:</span>
+            <p>To compute cumulative electrical energy consumed by the facility building over the 12-hour operational window using Composite Simpson's 1/3 Rule.</p>
+          </div>
+          <div class="exp-meta-item">
+            <span class="meta-label">Problem Being Solved:</span>
+            <p>Aggregating continuous fluctuating demand from lab equipment, HVAC chillers, and lighting into total kilowatt-hours.</p>
+          </div>
+          <div class="exp-meta-item">
+            <span class="meta-label">Input Data:</span>
+            <p id="exp2-input-summary">13 load power telemetry points \(P_{\text{cons}}(t)\) from 06:00 to 18:00.</p>
+          </div>
+          <div class="exp-meta-item">
+            <span class="meta-label">Mathematical Method:</span>
+            <p>Composite Simpson's 1/3 Rule: \(E_{\text{cons}} = \frac{h}{3}[C_0 + C_n + 4\sum C_{\text{odd}} + 2\sum C_{\text{even}}]\)</p>
+          </div>
+        </div>
+
+        <div class="exp-graph-container">
+          <div class="graph-header">
+            <h4>Interactive Building Load Curve \(P_{\text{cons}}(t)\) with Shaded Demand Area</h4>
+            <span class="badge badge-blue">Peak Load: <strong id="exp2-graph-peak">5.10 kW</strong></span>
+          </div>
+          <div class="canvas-container">
+            <canvas id="canvas-exp2" width="900" height="340"></canvas>
+          </div>
+        </div>
+
+        <div class="step-calculation-card">
+          <h4>Step-by-Step Hand Calculation Breakdown</h4>
+          <div class="calc-steps" id="exp2-calc-steps">
+            <!-- Dynamically populated step arithmetic -->
+          </div>
+        </div>
+
+        <div class="exp-result-callout res-blue">
+          <div class="res-title">Final Result:</div>
+          <div class="res-val" id="exp2-final-result">46.3000 kWh</div>
+          <div class="res-desc">Total Facility Energy Consumed during the observation period.</div>
+        </div>
+
+        <div class="exp-analysis-grid">
+          <div class="analysis-card">
+            <h4>Physical Observation</h4>
+            <p id="exp2-observation">
+              Building power consumption starts at a baseline of 1.80 kW at 06:00, increases as occupants arrive and HVAC systems engage, reaches a broad plateau between 4.80 kW and 5.10 kW from 11:00 to 14:00, and gently recedes to 2.80 kW at 18:00.
+            </p>
+          </div>
+          <div class="analysis-card">
+            <h4>Engineering Conclusion</h4>
+            <p id="exp2-conclusion">
+              The load curve exhibits moderate curvature with slow variation. Composite Simpson's 1/3 Rule provides an exact representation of cumulative consumption with negligible numerical dispersion.
+            </p>
+          </div>
+        </div>
+
+        <!-- WHAT DOES THIS RESULT MEAN? -->
+        <div class="meaning-box">
+          <div class="meaning-header">
+            <span class="meaning-badge">Insight</span>
+            <h4>What Does This Result Mean?</h4>
+          </div>
+          <p id="exp2-meaning">
+            The facility consumed approximately <strong>46.30 kWh</strong> of electrical energy across the 12-hour period.
+            Comparing this against total generation determines whether the facility was an overall net producer or net consumer of electricity.
+          </p>
+        </div>
+      </div>
+
+      <!-- EXPERIMENT 3 -->
+      <div id="exp-panel-3" class="experiment-panel">
+        <div class="exp-header-banner exp-green">
+          <div class="exp-number">EXPERIMENT 3</div>
+          <h3 class="exp-heading">Photovoltaic Generation vs. Facility Consumption & Net Energy Balance</h3>
+        </div>
+
+        <div class="exp-meta-grid">
+          <div class="exp-meta-item">
+            <span class="meta-label">Aim:</span>
+            <p>To superimpose generation and consumption curves, determine net power \(P_{\text{net}}(t) = P_{\text{gen}}(t) - P_{\text{cons}}(t)\), and evaluate total net energy exchange \(E_{\text{net}}\).</p>
+          </div>
+          <div class="exp-meta-item">
+            <span class="meta-label">Problem Being Solved:</span>
+            <p>Identifying grid import vs grid export operational regimes, break-even crossover points, and daytime energy self-sufficiency.</p>
+          </div>
+          <div class="exp-meta-item">
+            <span class="meta-label">Input Data:</span>
+            <p id="exp3-input-summary">Simultaneous solar generation and building load vectors at hourly intervals.</p>
+          </div>
+          <div class="exp-meta-item">
+            <span class="meta-label">Mathematical Method:</span>
+            <p>Linearity of Quadrature: \(E_{\text{net}} = \int [P_{\text{gen}}(t) - P_{\text{cons}}(t)] dt = E_{\text{gen}} - E_{\text{cons}}\)</p>
+          </div>
+        </div>
+
+        <div class="exp-graph-container">
+          <div class="graph-header">
+            <h4>Superimposed Generation \(P_{\text{gen}}(t)\), Load \(P_{\text{cons}}(t)\), and Net Power \(P_{\text{net}}(t)\)</h4>
+            <div class="graph-legends">
+              <span class="leg-item"><span class="dot dot-amber"></span> Solar Gen</span>
+              <span class="leg-item"><span class="dot dot-blue"></span> Building Load</span>
+              <span class="leg-item"><span class="dot dot-green"></span> Net Power (Surplus / Deficit)</span>
+            </div>
+          </div>
+          <div class="canvas-container">
+            <canvas id="canvas-exp3" width="900" height="360"></canvas>
+          </div>
+        </div>
+
+        <div class="step-calculation-card">
+          <h4>Net Energy Balance Derivation (Linearity & Vector Integration)</h4>
+          <div class="calc-steps" id="exp3-calc-steps">
+            <!-- Dynamically populated step arithmetic -->
+          </div>
+        </div>
+
+        <div class="exp-result-callout res-green">
+          <div class="res-title">Net Energy Balance:</div>
+          <div class="res-val" id="exp3-final-result">+16.6667 kWh</div>
+          <div class="res-desc">Positive Balance: Daytime solar generation covers 100% of facility consumption with a net surplus.</div>
+        </div>
+
+        <!-- THREE OPERATIONAL REGIMES -->
+        <div class="regimes-card">
+          <h4>The Three Operational Regimes across the Daylight Window:</h4>
+          <div class="regimes-grid">
+            <div class="regime-item regime-import">
+              <div class="reg-time">06:00 – 07:30</div>
+              <div class="reg-title">Morning Grid Import (Deficit)</div>
+              <p>Solar generation is low (0.20 to 1.45 kW) while facility starts up. The building draws a deficit of up to -1.60 kW from the utility grid.</p>
+            </div>
+            <div class="regime-item regime-export">
+              <div class="reg-time">08:00 – 15:30</div>
+              <div class="reg-title">Midday Solar Surplus (Export)</div>
+              <p>Solar generation exceeds building load for 7.5 consecutive hours, peaking at a net export of <strong>+4.30 kW</strong> at solar noon (12:00).</p>
+            </div>
+            <div class="regime-item regime-import">
+              <div class="reg-time">16:00 – 18:00</div>
+              <div class="reg-title">Evening Grid Import (Deficit)</div>
+              <p>Solar generation drops sharply as the sun sets, while building load remains active (3.75 to 2.80 kW), requiring grid import of up to -2.70 kW.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- WHAT DOES THIS RESULT MEAN? -->
+        <div class="meaning-box">
+          <div class="meaning-header">
+            <span class="meaning-badge">Critical Insight</span>
+            <h4>What Does This Result Mean?</h4>
+          </div>
+          <div id="exp3-meaning">
+            <p>
+              "The solar installation generated approximately <strong>62.97 kWh</strong> of electrical energy during the 12-hour observation period, while the building consumed approximately <strong>46.30 kWh</strong>.
+            </p>
+            <p>
+              The estimated net energy balance was positive at <strong>+16.67 kWh</strong>, meaning total solar generation exceeded total building consumption over the observation period."
+            </p>
+            <div class="warning-subnote">
+              <strong>Crucial Grid Export vs. Net Balance Distinction:</strong>
+              This net balance of +16.67 kWh is <em>not necessarily the actual physical amount exported to the electricity grid</em>.
+              Because solar generation and building load are not synchronized instantaneously, the facility must import approximately <strong>5.15 kWh</strong> during morning and late afternoon hours, and exports approximately <strong>21.82 kWh</strong> during midday.
+              Without an on-site Battery Energy Storage System (BESS), the facility both imports and exports power on the same day!
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- EXPERIMENT 4 -->
+      <div id="exp-panel-4" class="experiment-panel">
+        <div class="exp-header-banner exp-purple">
+          <div class="exp-number">EXPERIMENT 4</div>
+          <h3 class="exp-heading">Comparative Quadrature Audit: Simpson's 1/3 Rule vs. Trapezoidal Rule</h3>
+        </div>
+
+        <div class="exp-meta-grid">
+          <div class="exp-meta-item">
+            <span class="meta-label">Aim:</span>
+            <p>To quantify discrepancies between Composite Simpson's 1/3 Rule and the Trapezoidal Rule and demonstrate how curvature influences numerical quadrature.</p>
+          </div>
+          <div class="exp-meta-item">
+            <span class="meta-label">Problem Being Solved:</span>
+            <p>Assessing the magnitude of systematic underestimation in standard linear energy metering software when processing curved time-series data.</p>
+          </div>
+          <div class="exp-meta-item">
+            <span class="meta-label">Input Data:</span>
+            <p id="exp4-input-summary">Identical 12-subinterval dataset evaluated with both quadratic and linear quadrature.</p>
+          </div>
+          <div class="exp-meta-item">
+            <span class="meta-label">Mathematical Method:</span>
+            <p>Side-by-side computation of Simpson (\(\mathcal{O}(h^4)\)) and Trapezoidal (\(\mathcal{O}(h^2)\)) sums and numerical residual differences.</p>
+          </div>
+        </div>
+
+        <!-- Comparative Table matching Project Report Page 11 -->
+        <div class="table-container">
+          <table class="data-table comparative-table" id="exp4-comp-table">
+            <thead>
+              <tr>
+                <th>Energy Metric</th>
+                <th>Simpson's 1/3 Rule (\(E_S\))</th>
+                <th>Trapezoidal Rule (\(E_T\))</th>
+                <th>Numerical Discrepancy (\(E_S - E_T\))</th>
+                <th>Relative Difference (%)</th>
+                <th>Physical Interpretation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Solar Generation (\(E_{\text{gen}}\))</strong></td>
+                <td id="e4-simp-gen" class="font-mono">62.9667 kWh</td>
+                <td id="e4-trap-gen" class="font-mono">62.9000 kWh</td>
+                <td id="e4-diff-gen" class="font-mono text-positive">+0.0667 kWh</td>
+                <td id="e4-pct-gen" class="font-mono">+0.106%</td>
+                <td>Total DC-to-AC PV harvest (06:00–18:00)</td>
+              </tr>
+              <tr>
+                <td><strong>Facility Consumption (\(E_{\text{cons}}\))</strong></td>
+                <td id="e4-simp-cons" class="font-mono">46.3000 kWh</td>
+                <td id="e4-trap-cons" class="font-mono">46.2500 kWh</td>
+                <td id="e4-diff-cons" class="font-mono text-positive">+0.0500 kWh</td>
+                <td id="e4-pct-cons" class="font-mono">+0.108%</td>
+                <td>Total laboratory electrical demand</td>
+              </tr>
+              <tr class="highlight-row">
+                <td><strong>Net Energy Balance (\(E_{\text{net}}\))</strong></td>
+                <td id="e4-simp-net" class="font-mono font-bold">+16.6667 kWh</td>
+                <td id="e4-trap-net" class="font-mono font-bold">+16.6500 kWh</td>
+                <td id="e4-diff-net" class="font-mono text-positive font-bold">+0.0167 kWh</td>
+                <td id="e4-pct-net" class="font-mono">+0.100%</td>
+                <td>Surplus energy exported to utility grid</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="exp-graph-container">
+          <div class="graph-header">
+            <h4>Geometric Discrepancy: Parabolic Arches vs. Straight Linear Chords</h4>
+            <span class="badge badge-accent">Curvature Effect: \(f''(t) < 0\)</span>
+          </div>
+          <div class="canvas-container">
+            <canvas id="canvas-exp4" width="900" height="340"></canvas>
+          </div>
+        </div>
+
+        <div class="exp-analysis-grid">
+          <div class="analysis-card">
+            <h4>Why Does the Trapezoidal Rule Underestimate?</h4>
+            <p>
+              Both solar generation and daytime building demand are concave downward across the peak hours (\(f''(t) < 0\)).
+              In calculus, a straight line connecting two points on a concave curve lies <strong>strictly below the curve</strong>.
+              Consequently, every trapezoid leaves an uncaptured triangular sliver. Simpson's 1/3 Rule arches quadratic parabolas upward, capturing this missing energy.
+            </p>
+          </div>
+          <div class="analysis-card">
+            <h4>Engineering & Financial Significance</h4>
+            <p>
+              While 0.0667 kWh appears small for a single 12-hour cycle, over a full year across a commercial 1 MW solar plant, this systematic underestimation corresponds to <strong>thousands of kilowatt-hours</strong> in unaccounted solar revenue.
+            </p>
+          </div>
+        </div>
+
+        <!-- WHAT DOES THIS RESULT MEAN? -->
+        <div class="meaning-box">
+          <div class="meaning-header">
+            <span class="meaning-badge">Insight</span>
+            <h4>What Does This Result Mean?</h4>
+          </div>
+          <p>
+            The Trapezoidal Rule computed 62.9000 kWh of generation and 46.2500 kWh of consumption, underestimating Simpson's Rule by 0.0667 kWh and 0.0500 kWh respectively.
+            This demonstrates that for smooth, continuous engineering processes, Simpson's 1/3 Rule delivers higher precision without requiring expensive high-frequency sampling hardware.
+          </p>
+        </div>
+      </div>
+
+      <!-- EXPERIMENT 5 -->
+      <div id="exp-panel-5" class="experiment-panel">
+        <div class="exp-header-banner exp-indigo">
+          <div class="exp-number">EXPERIMENT 5 <span class="synthetic-tag">Synthetic Benchmark Model</span></div>
+          <h3 class="exp-heading">Effect of Sampling Interval (\(h\)) on Convergence & Error Order</h3>
+        </div>
+
+        <div class="exp-meta-grid">
+          <div class="exp-meta-item">
+            <span class="meta-label">Aim:</span>
+            <p>To verify the fourth-order convergence rate (\(\mathcal{O}(h^4)\)) of Simpson's 1/3 Rule against an analytical closed-form solar irradiance model.</p>
+          </div>
+          <div class="exp-meta-item">
+            <span class="meta-label">Problem Being Solved:</span>
+            <p>Determining how numerical integration error shrinks as the data logging time step \(h\) is progressively refined.</p>
+          </div>
+          <div class="exp-meta-item">
+            <span class="meta-label">Analytical Model Function:</span>
+            <p>\(P(t) = 9.40 \sin\left(\frac{\pi(t - 6)}{12}\right)\text{ kW}\) for \(t \in [6, 18]\text{ hours}\).</p>
+          </div>
+          <div class="exp-meta-item">
+            <span class="meta-label">Exact Analytical Integral:</span>
+            <p>\(E_{\text{exact}} = \int_6^{18} 9.40 \sin\left(\frac{\pi(t-6)}{12}\right) dt = \frac{9.40 \times 24}{\pi} \approx \mathbf{71.81071\text{ kWh}}\)</p>
+          </div>
+        </div>
+
+        <!-- Convergence Step Selector -->
+        <div class="convergence-controls">
+          <label>Select Sampling Interval to Inspect:</label>
+          <div class="step-buttons" id="step-selector-buttons">
+            <button class="step-btn" data-h="2.0">h = 2.0 h (n = 6)</button>
+            <button class="step-btn active" data-h="1.0">h = 1.0 h (n = 12)</button>
+            <button class="step-btn" data-h="0.5">h = 0.5 h (n = 24)</button>
+            <button class="step-btn" data-h="0.25">h = 0.25 h (n = 48)</button>
+            <button class="step-btn" data-h="0.1">h = 0.1 h (n = 120)</button>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table class="data-table" id="convergence-table">
+            <thead>
+              <tr>
+                <th>Step Size \(h\)</th>
+                <th>Subintervals \(n\)</th>
+                <th>Trapezoidal Result</th>
+                <th>Trapezoidal Error \(|E_T - E_{\text{exact}}|\)</th>
+                <th>Simpson Result</th>
+                <th>Simpson Error \(|E_S - E_{\text{exact}}|\)</th>
+                <th>Simpson Advantage Ratio</th>
+              </tr>
+            </thead>
+            <tbody id="convergence-table-body">
+              <!-- Dynamically populated from JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="exp-graph-container">
+          <div class="graph-header">
+            <h4>Log-Log Error Convergence Plot: \(\mathcal{O}(h^4)\) vs \(\mathcal{O}(h^2)\)</h4>
+            <span class="badge badge-accent">Asymptotic Slope: 4.0 vs 2.0</span>
+          </div>
+          <div class="canvas-container">
+            <canvas id="canvas-exp5" width="900" height="340"></canvas>
+          </div>
+        </div>
+
+        <div class="exp-analysis-grid">
+          <div class="analysis-card">
+            <h4>Convergence Rate Analysis</h4>
+            <p>
+              When step size \(h\) is halved from 1.0 h to 0.5 h, Trapezoidal error reduces by \(4\times\) (\(2^2 = 4\)), whereas Simpson's error drops by <strong>\(16.1\times\)</strong> (\(2^4 = 16\)).
+              At \(h = 0.1\text{ h}\), Simpson's rule error is less than \(0.0000002\text{ kWh}\).
+            </p>
+          </div>
+          <div class="analysis-card">
+            <h4>Practical SCADA Recommendation</h4>
+            <p>
+              For smooth diurnal solar curves, Simpson's 1/3 Rule at coarse 1-hour sampling delivers accuracy superior to the Trapezoidal rule sampled at 15-minute intervals, reducing data transmission bandwidth by 75%.
+            </p>
+          </div>
+        </div>
+
+        <!-- WHAT DOES THIS RESULT MEAN? -->
+        <div class="meaning-box">
+          <div class="meaning-header">
+            <span class="meaning-badge">Insight</span>
+            <h4>What Does This Result Mean?</h4>
+          </div>
+          <p>
+            This experiment mathematically proves that Simpson's 1/3 Rule converges to the true physical integral at a fourth-order rate.
+            Energy monitoring systems using Simpson's rule can maintain microgrid billing-grade precision without overwhelming low-power microcontroller memory.
+          </p>
+        </div>
+      </div>
+
+      <!-- EXPERIMENT 6 -->
+      <div id="exp-panel-6" class="experiment-panel">
+        <div class="exp-header-banner exp-teal">
+          <div class="exp-number">EXPERIMENT 6 <span class="synthetic-tag">Synthetic Meteorological Model</span></div>
+          <h3 class="exp-heading">Weather Scenarios Simulation: Sunny, Partly Cloudy & Overcast Day</h3>
+        </div>
+
+        <div class="exp-meta-grid">
+          <div class="exp-meta-item">
+            <span class="meta-label">Aim:</span>
+            <p>To analyze how atmospheric conditions and cloud transients influence solar power dynamics, numerical integration accuracy, and building energy self-sufficiency.</p>
+          </div>
+          <div class="exp-meta-item">
+            <span class="meta-label">Problem Being Solved:</span>
+            <p>Evaluating numerical quadrature performance when rapid cloud transients violate smooth curvature assumptions.</p>
+          </div>
+          <div class="exp-meta-item">
+            <span class="meta-label">Scenarios Modeled:</span>
+            <p>1. Clear Sunny Day (Smooth) • 2. Partly Cloudy (Intermittent transients) • 3. Overcast Day (Diffuse-dominated).</p>
+          </div>
+          <div class="exp-meta-item">
+            <span class="meta-label">Mathematical Method:</span>
+            <p>Piecewise Simpson quadrature applied to synthetic meteorological time-series profiles.</p>
+          </div>
+        </div>
+
+        <!-- Weather Switcher Controls -->
+        <div class="weather-selector-bar">
+          <span class="control-label">Select Meteorological Scenario:</span>
+          <div class="weather-buttons" id="weather-buttons">
+            <button class="weather-btn active" data-weather="sunny">☀️ Scenario 1: Clear Sunny Day</button>
+            <button class="weather-btn" data-weather="partly">⛅ Scenario 2: Partly Cloudy Day</button>
+            <button class="weather-btn" data-weather="cloudy">☁️ Scenario 3: Overcast Cloudy Day</button>
+          </div>
+        </div>
+
+        <div class="weather-scenario-kpi-bar">
+          <div class="w-kpi">Weather State: <strong id="w-kpi-state">Clear Sunny Day</strong></div>
+          <div class="w-kpi">Generated Energy: <strong id="w-kpi-gen">62.97 kWh</strong></div>
+          <div class="w-kpi">Building Demand: <strong id="w-kpi-cons">46.30 kWh</strong></div>
+          <div class="w-kpi">Net Balance: <strong id="w-kpi-net">+16.67 kWh (Surplus)</strong></div>
+          <div class="w-kpi">Self-Sufficiency: <strong id="w-kpi-suff">100%</strong></div>
+        </div>
+
+        <div class="exp-graph-container">
+          <div class="graph-header">
+            <h4 id="exp6-graph-title">Scenario Power Profiles & Net Exchange</h4>
+            <span class="badge badge-teal" id="exp6-graph-badge">Smooth Bell Curve</span>
+          </div>
+          <div class="canvas-container">
+            <canvas id="canvas-exp6" width="900" height="340"></canvas>
+          </div>
+        </div>
+
+        <div class="exp-analysis-grid">
+          <div class="analysis-card">
+            <h4>Meteorological Observation</h4>
+            <p id="exp6-weather-obs">
+              Under clear sunny conditions, irradiance follows an unobstructed solar arc. On partly cloudy days, sudden cloud shadowing causes sharp drops in generation, introducing high fourth derivatives (\(f^{(4)}\)) that require higher sampling frequencies.
+            </p>
+          </div>
+          <div class="analysis-card">
+            <h4>Practical Grid Integration Takeaway</h4>
+            <p id="exp6-weather-conc">
+              On overcast days, the building operates in a continuous net energy deficit, requiring grid import at all hours. Rapid cloud transients on partly cloudy days demonstrate why utility SCADA systems deploy 1-minute telemetry alongside Simpson integration.
+            </p>
+          </div>
+        </div>
+
+        <!-- WHAT DOES THIS RESULT MEAN? -->
+        <div class="meaning-box">
+          <div class="meaning-header">
+            <span class="meaning-badge">Insight</span>
+            <h4>What Does This Result Mean?</h4>
+          </div>
+          <p id="exp6-meaning-text">
+            On a sunny day, the system produces a net surplus of +16.67 kWh. However, on an overcast day, total generation drops to only ~15.2 kWh, causing an energy deficit of -31.1 kWh that must be supplied by the electric grid or a pre-charged battery system.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 5: WHAT DOES THIS RESULT MEAN? (GLOBAL SYNTHESIS) -->
+    <section id="results-meaning" class="content-section card">
+      <div class="section-badge-bar">
+        <span class="section-tag"><span class="icon">💡</span> Section 5: Engineering Results Synthesis</span>
+        <span class="active-dataset-tag">Comprehensive Energy Audit Interpretation</span>
+      </div>
+
+      <h2 class="section-title">What Does This Result Mean?</h2>
+
+      <div class="synthesis-card">
+        <div class="synthesis-header">
+          <div class="synthesis-quote">
+            "The solar installation generated approximately <strong>62.97 kWh</strong> of electrical energy during the 12-hour observation period, while the building consumed approximately <strong>46.30 kWh</strong>.
+            <br><br>
+            The estimated net energy balance was positive at <strong>+16.67 kWh</strong>, meaning total solar generation exceeded total building consumption over the observation period."
+          </div>
+        </div>
+
+        <div class="synthesis-grid">
+          <div class="syn-item">
+            <div class="syn-icon">⚡</div>
+            <div class="syn-text">
+              <h4>Total Solar Harvest (\(E_{\text{gen}} = 62.97\text{ kWh}\))</h4>
+              <p>
+                The 10 kW rooftop PV array operated at a daily capacity factor of \(\approx 52.5\%\) across the 12 daylight hours, successfully capturing the peak midday irradiance between 10:00 and 14:00.
+              </p>
+            </div>
+          </div>
+
+          <div class="syn-item">
+            <div class="syn-icon">🏢</div>
+            <div class="syn-text">
+              <h4>Total Facility Demand (\(E_{\text{cons}} = 46.30\text{ kWh}\))</h4>
+              <p>
+                The building load profile reflects typical academic institution operational hours, with peak load reaching 5.10 kW at 12:00 when laboratory computers and air conditioning chillers operated simultaneously.
+              </p>
+            </div>
+          </div>
+
+          <div class="syn-item">
+            <div class="syn-icon">🔄</div>
+            <div class="syn-text">
+              <h4>Net Surplus vs. Real Grid Export</h4>
+              <p>
+                While the daily net balance is positive (+16.67 kWh), <strong>net balance does not equal physical energy exported to the grid</strong>.
+                Because generation and load occur at different hours, the facility imported ~5.15 kWh in the early morning and late afternoon, while exporting ~21.82 kWh at solar noon.
+              </p>
+            </div>
+          </div>
+
+          <div class="syn-item">
+            <div class="syn-icon">🔋</div>
+            <div class="syn-text">
+              <h4>Battery Energy Storage System (BESS) Sizing</h4>
+              <p>
+                To achieve true zero-grid dependency during daytime, an on-site battery storage system of at least <strong>6 to 8 kWh</strong> capacity would be required to shift the midday solar surplus into the morning and evening deficit windows.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 6: DOWNLOAD EXPERIMENT REPORT & MODAL -->
+    <section id="report-section" class="content-section card">
+      <div class="section-badge-bar">
+        <span class="section-tag"><span class="icon">📑</span> Section 6: Laboratory Assessment Report</span>
+        <span class="active-dataset-tag">Internal Assessment Documentation</span>
+      </div>
+
+      <div class="report-box-header">
+        <div>
+          <h2 class="section-title">Computational Methods Laboratory Report Generator</h2>
+          <p class="section-subtitle">
+            Generate an official academic project report matching the Computational Methods laboratory format. Populate student enrollment details below to download or print your verified report.
+          </p>
+        </div>
+        <div class="report-buttons">
+          <button id="btn-generate-report" class="btn btn-primary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            Print / Save Lab Report (PDF)
+          </button>
+          <button id="btn-export-csv-full" class="btn btn-outline">
+            Export Dataset (CSV)
+          </button>
+          <button id="btn-export-json" class="btn btn-ghost">
+            Export Audit (JSON)
+          </button>
+        </div>
+      </div>
+
+      <!-- Student Credentials Form (Matching Report Page 1) -->
+      <div class="student-form-card">
+        <h3>Academic Assessment Submission Credentials</h3>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Student Name:</label>
+            <input type="text" id="rpt-student-name" class="input-control" placeholder="e.g. Lakshay" value="Lakshay">
+          </div>
+          <div class="form-group">
+            <label>Roll / Enrollment No.:</label>
+            <input type="text" id="rpt-roll-no" class="input-control" placeholder="e.g. 05214802722" value="05214802722">
+          </div>
+          <div class="form-group">
+            <label>Department:</label>
+            <input type="text" id="rpt-department" class="input-control" placeholder="e.g. Computer Science & Engineering" value="Computer Science & Engineering">
+          </div>
+          <div class="form-group">
+            <label>Semester / Section:</label>
+            <input type="text" id="rpt-semester" class="input-control" placeholder="e.g. 5th Semester / Section A" value="5th Semester / Section A">
+          </div>
+          <div class="form-group">
+            <label>Course Title:</label>
+            <input type="text" id="rpt-course" class="input-control" placeholder="e.g. Computational Methods Laboratory" value="Computational Methods Laboratory">
+          </div>
+          <div class="form-group">
+            <label>Submitted To (Faculty):</label>
+            <input type="text" id="rpt-faculty" class="input-control" placeholder="e.g. Dr. Faculty Name" value="Department of Applied Mathematics & Computing">
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- PRINTABLE REPORT MODAL / CONTAINER (OFF-SCREEN / PRINT VIEW) -->
+  <div id="print-report-container" class="print-report-view">
+    <div class="print-header">
+      <div class="print-college">COMPUTATIONAL METHODS LABORATORY • INTERNAL ASSESSMENT PROJECT REPORT</div>
+      <h1 class="print-title">Numerical Integration of Solar Panel Energy Output and Consumption Using Simpson's 1/3 Rule</h1>
+      <div class="print-sub">A Practical Engineering Application of Composite Quadratic Quadrature to Discrete Photovoltaic Power Telemetry</div>
+    </div>
+
+    <div class="print-meta-table-box">
+      <table class="print-meta-table">
+        <tr>
+          <td><strong>Student Name:</strong> <span id="p-name">Lakshay</span></td>
+          <td><strong>Roll / Enrollment No:</strong> <span id="p-roll">05214802722</span></td>
+        </tr>
+        <tr>
+          <td><strong>Department:</strong> <span id="p-dept">Computer Science & Engineering</span></td>
+          <td><strong>Semester / Section:</strong> <span id="p-sem">5th Semester / Section A</span></td>
+        </tr>
+        <tr>
+          <td><strong>Course Title:</strong> <span id="p-course">Computational Methods Laboratory</span></td>
+          <td><strong>Submitted To:</strong> <span id="p-fac">Department of Applied Mathematics</span></td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="print-section">
+      <h3>1. Project Objective & Problem Formulation</h3>
+      <p>
+        The objective of this project is to apply <strong>Composite Simpson's 1/3 Rule</strong> to evaluate cumulative electrical energy (in kilowatt-hours, kWh) from discrete, time-sampled power telemetry of a 10 kW peak rooftop solar photovoltaic (PV) installation and its connected building load over a 12-hour daylight cycle (06:00 to 18:00).
+      </p>
+      <div class="print-formula">
+        $$E = \int_a^b P(t) \, dt \approx \frac{h}{3}\left[y_0 + y_n + 4\sum_{\text{odd}} y_i + 2\sum_{\text{even}} y_i\right]$$
+      </div>
+    </div>
+
+    <div class="print-section">
+      <h3>2. Discrete Telemetry Data Table</h3>
+      <table class="print-data-table" id="p-data-table">
+        <!-- Rendered by JS -->
+      </table>
+    </div>
+
+    <div class="print-section">
+      <h3>3. Numerical Integration Results & Comparative Analysis</h3>
+      <table class="print-data-table" id="p-results-table">
+        <!-- Rendered by JS -->
+      </table>
+    </div>
+
+    <div class="print-section">
+      <h3>4. Engineering Discussion & Conclusion</h3>
+      <p id="p-discussion-text">
+        The solar installation generated approximately 62.97 kWh of electrical energy during the 12-hour observation period, while the building consumed approximately 46.30 kWh.
+        The estimated net energy balance was positive at +16.67 kWh, indicating net energy exported to the utility grid.
+        Composite Simpson's 1/3 Rule captures curvature with fourth-order precision \(\mathcal{O}(h^4)\), recovering the systematic underestimation introduced by linear trapezoidal approximations.
+      </p>
+    </div>
+
+    <div class="print-signatures">
+      <div class="sig-box">
+        <div class="sig-line"></div>
+        <div>Student Signature</div>
+      </div>
+      <div class="sig-box">
+        <div class="sig-line"></div>
+        <div>Faculty Evaluator Signature</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="app-footer">
+    <div class="footer-container">
+      <div class="footer-brand">
+        <strong>SolarSim Virtual Laboratory</strong> • Computational Methods & Photovoltaic Telemetry Simulator
+      </div>
+      <div class="footer-note">
+        Built for Computational Methods Laboratory Internal Assessment Project • Composite Simpson's 1/3 Rule
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
