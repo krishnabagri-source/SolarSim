@@ -491,16 +491,20 @@ wasm.extend(make_section(5, sec5_payload))
 # Section 7: Export Section
 # Exports:
 # - memory (kind 2, idx 0)
+# - simpson (kind 0, idx 0)
 # - simpsons_one_third (kind 0, idx 0)
+# - trapezoidal (kind 0, idx 1)
 # - trapezoidal_rule (kind 0, idx 1)
 # - compute_audit (kind 0, idx 2)
 def make_export(name, kind, idx):
     name_bytes = name.encode('utf-8')
     return leb128_u(len(name_bytes)) + name_bytes + bytes([kind]) + leb128_u(idx)
 
-sec7_payload = leb128_u(4) + \
+sec7_payload = leb128_u(6) + \
     make_export('memory', 2, 0) + \
+    make_export('simpson', 0, 0) + \
     make_export('simpsons_one_third', 0, 0) + \
+    make_export('trapezoidal', 0, 1) + \
     make_export('trapezoidal_rule', 0, 1) + \
     make_export('compute_audit', 0, 2)
 wasm.extend(make_section(7, sec7_payload))

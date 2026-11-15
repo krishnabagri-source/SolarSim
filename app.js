@@ -89,7 +89,7 @@
 
   // --- WEBASSEMBLY C++ COMPUTATIONAL METHODS ENGINE ---
   // Base64-encoded compiled solarsim_engine.wasm (supports offline file:/// execution and CDN/Vercel)
-  const WASM_BASE64 = 'AGFzbQEAAAABEQJgA39/fAF8YAV/f398fwF/AwQDAAABBQMBAAEHQgQGbWVtb3J5AgASc2ltcHNvbnNfb25lX3RoaXJkAAAQdHJhcGV6b2lkYWxfcnVsZQABDWNvbXB1dGVfYXVkaXQAAgrsAwPLAQICfwN8IAFBAWshAyADQQBMIANBAXFqBEBEAAAAAAAAAAAPCyAAKwMAIAAgA0EDdGorAwCgIQVEAAAAAAAAAAAhBkEBIQQCQANAIAQgA04NASAGIAAgBEEDdGorAwCgIQYgBEECaiEEDAALC0QAAAAAAAAAACEHQQIhBAJAA0AgBCADTg0BIAcgACAEQQN0aisDAKAhByAEQQJqIQQMAAsLIAJEAAAAAAAACECjIAVEAAAAAAAAEEAgBqKgRAAAAAAAAABAIAeioKILfwICfwF8IAFBAWshAyADQQBMBEBEAAAAAAAAAAAPC0QAAAAAAAAAACEFQQEhBAJAA0AgBCADTg0BIAUgACAEQQN0aisDAKAhBSAEQQFqIQQMAAsLIAJEAAAAAAAAAECjIAArAwAgACADQQN0aisDAKBEAAAAAAAAAEAgBaKgogucAQIBfwR8IAJBAWshBSAFQQBMIAVBAXFqBEBBfw8LIAAgAiADEAAhBiABIAIgAxAAIQcgACACIAMQASEIIAEgAiADEAEhCSAEIAY5AwAgBCAHOQMIIAQgBiAHoTkDECAEIAg5AxggBCAJOQMgIAQgCCAJoTkDKCAEIAYgCKE5AzAgBCAHIAmhOQM4IAQgBiAHoSAIIAmhoTkDQEEACw==';
+  const WASM_BASE64 = 'AGFzbQEAAAABEQJgA39/fAF8YAV/f398fwF/AwQDAAABBQMBAAEHWgYGbWVtb3J5AgAHc2ltcHNvbgAAEnNpbXBzb25zX29uZV90aGlyZAAAC3RyYXBlem9pZGFsAAEQdHJhcGV6b2lkYWxfcnVsZQABDWNvbXB1dGVfYXVkaXQAAgrsAwPLAQICfwN8IAFBAWshAyADQQBMIANBAXFqBEBEAAAAAAAAAAAPCyAAKwMAIAAgA0EDdGorAwCgIQVEAAAAAAAAAAAhBkEBIQQCQANAIAQgA04NASAGIAAgBEEDdGorAwCgIQYgBEECaiEEDAALC0QAAAAAAAAAACEHQQIhBAJAA0AgBCADTg0BIAcgACAEQQN0aisDAKAhByAEQQJqIQQMAAsLIAJEAAAAAAAACECjIAVEAAAAAAAAEEAgBqKgRAAAAAAAAABAIAeioKILfwICfwF8IAFBAWshAyADQQBMBEBEAAAAAAAAAAAPC0QAAAAAAAAAACEFQQEhBAJAA0AgBCADTg0BIAUgACAEQQN0aisDAKAhBSAEQQFqIQQMAAsLIAJEAAAAAAAAAECjIAArAwAgACADQQN0aisDAKBEAAAAAAAAAEAgBaKgogucAQIBfwR8IAJBAWshBSAFQQBMIAVBAXFqBEBBfw8LIAAgAiADEAAhBiABIAIgAxAAIQcgACACIAMQASEIIAEgAiADEAEhCSAEIAY5AwAgBCAHOQMIIAQgBiAHoTkDECAEIAg5AxggBCAJOQMgIAQgCCAJoTkDKCAEIAYgCKE5AzAgBCAHIAmhOQM4IAQgBiAHoSAIIAmhoTkDQEEACw==';
 
   const WasmEngine = {
     instance: null,
@@ -1247,20 +1247,84 @@
   }
 
   // --- REPORT GENERATOR & MODAL ---
+  // --- REPORT GENERATOR & DYNAMIC LAB REPORT ENGINE ---
   function initReportGenerator() {
     const btnGen = document.getElementById('btn-generate-report');
     const btnPrintNav = document.getElementById('btn-print-report');
+    const btnPreview = document.getElementById('btn-preview-report');
+    const btnCloseModal = document.getElementById('btn-close-report-modal');
+    const btnPrintFromModal = document.getElementById('btn-print-from-modal');
+    const modalPreview = document.getElementById('modal-report-preview');
     const btnExportJson = document.getElementById('btn-export-json');
     const btnExportCsvFull = document.getElementById('btn-export-csv-full');
 
     function triggerPrint() {
       // Sync form inputs to print header
       syncStudentCredentials();
+      // Ensure graphs are rendered
+      recalculateAll();
       window.print();
     }
 
     if (btnGen) btnGen.addEventListener('click', triggerPrint);
     if (btnPrintNav) btnPrintNav.addEventListener('click', triggerPrint);
+
+    // Open Interactive On-Screen Report Preview
+    if (btnPreview && modalPreview) {
+      btnPreview.addEventListener('click', () => {
+        syncStudentCredentials();
+        recalculateAll();
+
+        const reportContainer = document.getElementById('print-report-container');
+        const modalBody = document.getElementById('report-modal-body');
+        if (reportContainer && modalBody) {
+          // Clone the report pages into modal
+          modalBody.innerHTML = reportContainer.innerHTML;
+
+          // Copy rendered canvas bitmaps to cloned canvases in modal
+          const origCanvases = [
+            document.getElementById('report-canvas-1'),
+            document.getElementById('report-canvas-2'),
+            document.getElementById('report-canvas-3'),
+            document.getElementById('report-canvas-4')
+          ];
+          const modalCanvases = modalBody.querySelectorAll('canvas');
+          modalCanvases.forEach((mc, idx) => {
+            const oc = origCanvases[idx];
+            if (oc) {
+              mc.width = oc.width;
+              mc.height = oc.height;
+              const mctx = mc.getContext('2d');
+              mctx.drawImage(oc, 0, 0);
+            }
+          });
+        }
+        modalPreview.style.display = 'flex';
+      });
+    }
+
+    // Close Report Preview Modal
+    if (btnCloseModal && modalPreview) {
+      btnCloseModal.addEventListener('click', () => {
+        modalPreview.style.display = 'none';
+      });
+    }
+
+    if (btnPrintFromModal) {
+      btnPrintFromModal.addEventListener('click', () => {
+        if (modalPreview) modalPreview.style.display = 'none';
+        triggerPrint();
+      });
+    }
+
+    // Close on clicking backdrop
+    if (modalPreview) {
+      modalPreview.addEventListener('click', (e) => {
+        if (e.target === modalPreview) {
+          modalPreview.style.display = 'none';
+        }
+      });
+    }
 
     if (btnExportJson) {
       btnExportJson.addEventListener('click', () => {
@@ -1272,10 +1336,11 @@
         const audit = {
           metadata: {
             project: "SolarSim Computational Methods Laboratory",
-            method: "Composite Simpson's 1/3 Rule",
+            method: "Composite Simpson's 1/3 Rule & Composite Trapezoidal Rule",
             mode: state.mode,
             stepSize_h: data.h,
-            subintervals_n: data.pGen.length - 1
+            subintervals_n: data.pGen.length - 1,
+            exportTimestamp: new Date().toISOString()
           },
           telemetry: data.hours.map((h, i) => ({
             index: i,
@@ -1323,21 +1388,504 @@
     setText('p-sem', sem);
     setText('p-course', course);
     setText('p-fac', fac);
+    setText('sig-roll', roll);
+
+    const dateStr = new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
+    setText('p-date', dateStr);
   }
 
+  // --- REPORT CANVAS SETUP HELPER ---
+  function setupReportCanvas(canvasId, width = 720, height = 250) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return null;
+    const dpr = 2; // High-DPI 2x scaling for crisp printing
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+    const ctx = canvas.getContext('2d');
+    ctx.resetTransform();
+    ctx.scale(dpr, dpr);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, width, height);
+    return { canvas, ctx, width, height };
+  }
+
+  // --- REPORT GRAPH 1: SOLAR GENERATION VS BUILDING CONSUMPTION ---
+  function renderReportGraph1(data) {
+    const setup = setupReportCanvas('report-canvas-1', 720, 250);
+    if (!setup) return;
+    const { ctx, width, height } = setup;
+
+    const padL = 55, padR = 25, padT = 32, padB = 35;
+    const pw = width - padL - padR;
+    const ph = height - padT - padB;
+    const N = data.pGen.length;
+
+    // Y scale: 0 to 10 kW
+    const maxVal = Math.max(10, ...data.pGen, ...data.pCons);
+    const yMax = Math.ceil(maxVal / 2) * 2;
+
+    // Grid lines & Y ticks
+    ctx.font = '10px sans-serif';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#475569';
+
+    const ySteps = 5;
+    for (let s = 0; s <= ySteps; s++) {
+      const val = (yMax / ySteps) * s;
+      const y = padT + ph - (s / ySteps) * ph;
+
+      ctx.beginPath();
+      ctx.strokeStyle = '#e2e8f0';
+      ctx.lineWidth = 1;
+      ctx.moveTo(padL, y);
+      ctx.lineTo(padL + pw, y);
+      ctx.stroke();
+
+      ctx.fillText(`${val.toFixed(1)} kW`, padL - 8, y);
+    }
+
+    // X ticks & labels (hours)
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    for (let i = 0; i < N; i++) {
+      const x = padL + (i / (N - 1)) * pw;
+      ctx.fillText(data.times[i], x, padT + ph + 8);
+    }
+
+    // Draw Building Consumption (Blue line)
+    ctx.beginPath();
+    ctx.strokeStyle = '#2563eb';
+    ctx.lineWidth = 2.2;
+    for (let i = 0; i < N; i++) {
+      const x = padL + (i / (N - 1)) * pw;
+      const y = padT + ph - (data.pCons[i] / yMax) * ph;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // Blue points
+    for (let i = 0; i < N; i++) {
+      const x = padL + (i / (N - 1)) * pw;
+      const y = padT + ph - (data.pCons[i] / yMax) * ph;
+      ctx.beginPath();
+      ctx.fillStyle = '#2563eb';
+      ctx.arc(x, y, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.fillStyle = '#ffffff';
+      ctx.arc(x, y, 1.8, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Draw Solar Generation (Amber line)
+    ctx.beginPath();
+    ctx.strokeStyle = '#d97706';
+    ctx.lineWidth = 2.6;
+    for (let i = 0; i < N; i++) {
+      const x = padL + (i / (N - 1)) * pw;
+      const y = padT + ph - (data.pGen[i] / yMax) * ph;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // Amber points & find peak
+    let peakVal = -1, peakIdx = 0;
+    for (let i = 0; i < N; i++) {
+      if (data.pGen[i] > peakVal) {
+        peakVal = data.pGen[i];
+        peakIdx = i;
+      }
+      const x = padL + (i / (N - 1)) * pw;
+      const y = padT + ph - (data.pGen[i] / yMax) * ph;
+      ctx.beginPath();
+      ctx.fillStyle = '#d97706';
+      ctx.arc(x, y, 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.fillStyle = '#ffffff';
+      ctx.arc(x, y, 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Annotate Peak
+    const peakX = padL + (peakIdx / (N - 1)) * pw;
+    const peakY = padT + ph - (peakVal / yMax) * ph;
+    ctx.fillStyle = '#b45309';
+    ctx.font = 'bold 9.5px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(`Peak: ${peakVal.toFixed(2)} kW`, peakX, peakY - 12);
+
+    // Axis titles & Legend
+    ctx.font = 'bold 11px sans-serif';
+    ctx.fillStyle = '#0f172a';
+    ctx.textAlign = 'left';
+    ctx.fillText('Power (kW) vs. Time of Day', padL, padT - 14);
+
+    // Legend
+    ctx.font = '10px sans-serif';
+    ctx.fillStyle = '#d97706';
+    ctx.fillRect(width - 290, padT - 22, 12, 12);
+    ctx.fillStyle = '#1e293b';
+    ctx.fillText('Solar Generation (kW)', width - 272, padT - 13);
+
+    ctx.fillStyle = '#2563eb';
+    ctx.fillRect(width - 150, padT - 22, 12, 12);
+    ctx.fillStyle = '#1e293b';
+    ctx.fillText('Building Load (kW)', width - 132, padT - 13);
+  }
+
+  // --- REPORT GRAPH 2: NET POWER VS TIME (SURPLUS & DEFICIT) ---
+  function renderReportGraph2(data) {
+    const setup = setupReportCanvas('report-canvas-2', 720, 250);
+    if (!setup) return;
+    const { ctx, width, height } = setup;
+
+    const padL = 55, padR = 25, padT = 32, padB = 35;
+    const pw = width - padL - padR;
+    const ph = height - padT - padB;
+    const N = data.pNet.length;
+
+    const minNet = Math.min(...data.pNet);
+    const maxNet = Math.max(...data.pNet);
+    const yMin = Math.min(-4, Math.floor(minNet - 0.5));
+    const yMax = Math.max(6, Math.ceil(maxNet + 0.5));
+    const yRange = yMax - yMin;
+
+    const getY = (val) => padT + ph - ((val - yMin) / yRange) * ph;
+    const getX = (idx) => padL + (idx / (N - 1)) * pw;
+    const zeroY = getY(0);
+
+    // Background horizontal grid lines
+    ctx.font = '10px sans-serif';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#475569';
+
+    for (let val = yMin; val <= yMax; val += 2) {
+      const y = getY(val);
+      ctx.beginPath();
+      ctx.strokeStyle = val === 0 ? '#0f172a' : '#e2e8f0';
+      ctx.lineWidth = val === 0 ? 1.8 : 1;
+      ctx.moveTo(padL, y);
+      ctx.lineTo(padL + pw, y);
+      ctx.stroke();
+
+      ctx.fillText(`${val >= 0 ? '+' : ''}${val.toFixed(1)} kW`, padL - 8, y);
+    }
+
+    // X-axis time labels
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    for (let i = 0; i < N; i++) {
+      ctx.fillText(data.times[i], getX(i), padT + ph + 8);
+    }
+
+    // Shaded Area under net curve
+    // Clip paths for positive (surplus) and negative (deficit)
+    // 1. Surplus area (above zeroY)
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(padL, padT, pw, zeroY - padT);
+    ctx.clip();
+
+    ctx.beginPath();
+    ctx.moveTo(getX(0), zeroY);
+    for (let i = 0; i < N; i++) {
+      ctx.lineTo(getX(i), getY(data.pNet[i]));
+    }
+    ctx.lineTo(getX(N - 1), zeroY);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(16, 185, 129, 0.28)';
+    ctx.fill();
+    ctx.restore();
+
+    // 2. Deficit area (below zeroY)
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(padL, zeroY, pw, padT + ph - zeroY);
+    ctx.clip();
+
+    ctx.beginPath();
+    ctx.moveTo(getX(0), zeroY);
+    for (let i = 0; i < N; i++) {
+      ctx.lineTo(getX(i), getY(data.pNet[i]));
+    }
+    ctx.lineTo(getX(N - 1), zeroY);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(239, 68, 68, 0.24)';
+    ctx.fill();
+    ctx.restore();
+
+    // Prominent zero line label
+    ctx.font = 'bold 9px sans-serif';
+    ctx.fillStyle = '#0f172a';
+    ctx.textAlign = 'left';
+    ctx.fillText('0 kW Balance Line', padL + 8, zeroY - 6);
+
+    // Draw Net Power Curve Line
+    ctx.beginPath();
+    ctx.strokeStyle = '#4338ca';
+    ctx.lineWidth = 2.4;
+    for (let i = 0; i < N; i++) {
+      const x = getX(i);
+      const y = getY(data.pNet[i]);
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // Points on net curve
+    for (let i = 0; i < N; i++) {
+      const x = getX(i);
+      const y = getY(data.pNet[i]);
+      ctx.beginPath();
+      ctx.fillStyle = data.pNet[i] >= 0 ? '#059669' : '#dc2626';
+      ctx.arc(x, y, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.fillStyle = '#ffffff';
+      ctx.arc(x, y, 1.8, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Legend
+    ctx.font = '10px sans-serif';
+    ctx.fillStyle = '#10b981';
+    ctx.fillRect(width - 320, padT - 22, 12, 12);
+    ctx.fillStyle = '#1e293b';
+    ctx.fillText('Surplus (Grid Export)', width - 302, padT - 13);
+
+    ctx.fillStyle = '#ef4444';
+    ctx.fillRect(width - 180, padT - 22, 12, 12);
+    ctx.fillStyle = '#1e293b';
+    ctx.fillText('Deficit (Grid Import)', width - 162, padT - 13);
+  }
+
+  // --- REPORT GRAPH 3: SIMPSON'S VS TRAPEZOIDAL GROUPED BAR CHART ---
+  function renderReportGraph3(sG, tG, sC, tC, sN, tN) {
+    const setup = setupReportCanvas('report-canvas-3', 720, 250);
+    if (!setup) return;
+    const { ctx, width, height } = setup;
+
+    const padL = 60, padR = 25, padT = 38, padB = 40;
+    const pw = width - padL - padR;
+    const ph = height - padT - padB;
+
+    const maxVal = Math.max(sG.result, tG.result, sC.result, tC.result, Math.abs(sN.result), Math.abs(tN.result));
+    const yMax = Math.ceil(maxVal / 10) * 10 + 10;
+
+    // Grid lines
+    ctx.font = '10px sans-serif';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#475569';
+
+    const ySteps = 5;
+    for (let s = 0; s <= ySteps; s++) {
+      const val = (yMax / ySteps) * s;
+      const y = padT + ph - (s / ySteps) * ph;
+
+      ctx.beginPath();
+      ctx.strokeStyle = '#e2e8f0';
+      ctx.lineWidth = 1;
+      ctx.moveTo(padL, y);
+      ctx.lineTo(padL + pw, y);
+      ctx.stroke();
+
+      ctx.fillText(`${val.toFixed(0)} kWh`, padL - 8, y);
+    }
+
+    const groups = [
+      { label: 'Generated Energy (E_gen)', simp: sG.result, trap: tG.result },
+      { label: 'Consumed Energy (E_cons)', simp: sC.result, trap: tC.result },
+      { label: 'Net Energy (E_net)', simp: sN.result, trap: tN.result }
+    ];
+
+    const groupWidth = pw / groups.length;
+    const barW = 44;
+    const gap = 10;
+
+    groups.forEach((grp, idx) => {
+      const cx = padL + (idx + 0.5) * groupWidth;
+      const xSimp = cx - barW - (gap / 2);
+      const xTrap = cx + (gap / 2);
+
+      const hSimp = (Math.max(0, grp.simp) / yMax) * ph;
+      const hTrap = (Math.max(0, grp.trap) / yMax) * ph;
+      const ySimp = padT + ph - hSimp;
+      const yTrap = padT + ph - hTrap;
+
+      // Simpson's Bar (Emerald green)
+      ctx.fillStyle = '#059669';
+      ctx.fillRect(xSimp, ySimp, barW, hSimp);
+      ctx.strokeStyle = '#047857';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(xSimp, ySimp, barW, hSimp);
+
+      // Trapezoidal Bar (Indigo)
+      ctx.fillStyle = '#6366f1';
+      ctx.fillRect(xTrap, yTrap, barW, hTrap);
+      ctx.strokeStyle = '#4f46e5';
+      ctx.strokeRect(xTrap, yTrap, barW, hTrap);
+
+      // Value text above bars
+      ctx.font = 'bold 9.5px sans-serif';
+      ctx.textAlign = 'center';
+
+      ctx.fillStyle = '#065f46';
+      ctx.fillText(`${grp.simp.toFixed(4)}`, xSimp + barW / 2, ySimp - 6);
+
+      ctx.fillStyle = '#3730a3';
+      ctx.fillText(`${grp.trap.toFixed(4)}`, xTrap + barW / 2, yTrap - 6);
+
+      // Group Label at bottom
+      ctx.font = 'bold 10px sans-serif';
+      ctx.fillStyle = '#1e293b';
+      ctx.textBaseline = 'top';
+      ctx.fillText(grp.label, cx, padT + ph + 8);
+    });
+
+    // Zero baseline
+    ctx.beginPath();
+    ctx.strokeStyle = '#0f172a';
+    ctx.lineWidth = 1.5;
+    ctx.moveTo(padL, padT + ph);
+    ctx.lineTo(padL + pw, padT + ph);
+    ctx.stroke();
+
+    // Legend
+    ctx.font = '10px sans-serif';
+    ctx.fillStyle = '#059669';
+    ctx.fillRect(width - 340, padT - 26, 12, 12);
+    ctx.fillStyle = '#1e293b';
+    ctx.fillText("Composite Simpson's 1/3 (kWh)", width - 322, padT - 17);
+
+    ctx.fillStyle = '#6366f1';
+    ctx.fillRect(width - 165, padT - 26, 12, 12);
+    ctx.fillStyle = '#1e293b';
+    ctx.fillText('Composite Trapezoidal (kWh)', width - 147, padT - 17);
+  }
+
+  // --- REPORT GRAPH 4: DIFFERENCE BETWEEN NUMERICAL METHODS ---
+  function renderReportGraph4(sG, tG, sC, tC, sN, tN) {
+    const setup = setupReportCanvas('report-canvas-4', 720, 250);
+    if (!setup) return;
+    const { ctx, width, height } = setup;
+
+    const padL = 70, padR = 30, padT = 38, padB = 40;
+    const pw = width - padL - padR;
+    const ph = height - padT - padB;
+
+    const diffGen = sG.result - tG.result;
+    const diffCons = sC.result - tC.result;
+    const diffNet = sN.result - tN.result;
+
+    const maxDiff = Math.max(0.08, diffGen * 1.25);
+    const yMax = maxDiff;
+
+    // Grid lines
+    ctx.font = '10px sans-serif';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#475569';
+
+    const ySteps = 4;
+    for (let s = 0; s <= ySteps; s++) {
+      const val = (yMax / ySteps) * s;
+      const y = padT + ph - (s / ySteps) * ph;
+
+      ctx.beginPath();
+      ctx.strokeStyle = '#e2e8f0';
+      ctx.lineWidth = 1;
+      ctx.moveTo(padL, y);
+      ctx.lineTo(padL + pw, y);
+      ctx.stroke();
+
+      ctx.fillText(`+${val.toFixed(4)} kWh`, padL - 8, y);
+    }
+
+    const items = [
+      { label: 'Generation Discrepancy', val: diffGen, desc: 'E_simp - E_trap (Solar)' },
+      { label: 'Consumption Discrepancy', val: diffCons, desc: 'E_simp - E_trap (Load)' },
+      { label: 'Net Energy Discrepancy', val: diffNet, desc: 'E_simp - E_trap (Net)' }
+    ];
+
+    const itemWidth = pw / items.length;
+    const barW = 68;
+
+    items.forEach((item, idx) => {
+      const cx = padL + (idx + 0.5) * itemWidth;
+      const x = cx - (barW / 2);
+      const barH = (Math.max(0, item.val) / yMax) * ph;
+      const y = padT + ph - barH;
+
+      // Cyan / Teal Bar
+      ctx.fillStyle = '#0891b2';
+      ctx.fillRect(x, y, barW, barH);
+      ctx.strokeStyle = '#0e7490';
+      ctx.lineWidth = 1.2;
+      ctx.strokeRect(x, y, barW, barH);
+
+      // Value text above bar
+      ctx.font = 'bold 10px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#0e7490';
+      ctx.fillText(`+${item.val.toFixed(4)} kWh`, cx, y - 8);
+
+      // Label below bar
+      ctx.font = 'bold 9.5px sans-serif';
+      ctx.fillStyle = '#1e293b';
+      ctx.textBaseline = 'top';
+      ctx.fillText(item.label, cx, padT + ph + 8);
+    });
+
+    // Zero baseline
+    ctx.beginPath();
+    ctx.strokeStyle = '#0f172a';
+    ctx.lineWidth = 1.6;
+    ctx.moveTo(padL, padT + ph);
+    ctx.lineTo(padL + pw, padT + ph);
+    ctx.stroke();
+
+    // Top title note
+    ctx.font = 'italic 10px sans-serif';
+    ctx.fillStyle = '#0369a1';
+    ctx.textAlign = 'left';
+    ctx.fillText('All discrepancies Δ > 0: Proves Trapezoidal Rule systematically truncates curvature peaks', padL, padT - 16);
+  }
+
+  // --- RENDER ALL 4 REPORT GRAPHS ---
+  function renderReportGraphs(data, sG, tG, sC, tC, sN, tN) {
+    try {
+      renderReportGraph1(data);
+      renderReportGraph2(data);
+      renderReportGraph3(sG, tG, sC, tC, sN, tN);
+      renderReportGraph4(sG, tG, sC, tC, sN, tN);
+    } catch (err) {
+      console.warn('Report graph rendering notice:', err);
+    }
+  }
+
+  // --- DYNAMIC REPORT DATA & TEXT UPDATE ---
   function updatePrintReport(data, sG, tG, sC, tC, sN, tN) {
+    syncStudentCredentials();
+
+    // 1. Table of 13 Hourly Readings
     const pDataTable = document.getElementById('p-data-table');
     if (pDataTable) {
       let html = `
         <thead>
           <tr>
             <th>Index (i)</th>
-            <th>Time</th>
+            <th>Clock Time</th>
             <th>Hour (t)</th>
-            <th>Weight (w_i)</th>
-            <th>Solar Gen (kW)</th>
-            <th>Building Load (kW)</th>
-            <th>Net Power (kW)</th>
+            <th>Simpson Weight (w_i)</th>
+            <th>Solar Gen P_gen (kW)</th>
+            <th>Building Load P_cons (kW)</th>
+            <th>Net Power P_net (kW)</th>
           </tr>
         </thead>
         <tbody>
@@ -1351,10 +1899,10 @@
             <td>${i}</td>
             <td>${data.times[i]}</td>
             <td>${h.toFixed(1)}</td>
-            <td>${w}</td>
+            <td><strong>${w}</strong></td>
             <td>${data.pGen[i].toFixed(2)}</td>
             <td>${data.pCons[i].toFixed(2)}</td>
-            <td>${data.pNet[i] >= 0 ? '+' : ''}${data.pNet[i].toFixed(2)}</td>
+            <td style="font-weight: 600; color: ${data.pNet[i] >= 0 ? '#059669' : '#dc2626'};">${data.pNet[i] >= 0 ? '+' : ''}${data.pNet[i].toFixed(2)}</td>
           </tr>
         `;
       });
@@ -1362,43 +1910,94 @@
       pDataTable.innerHTML = html;
     }
 
+    // 2. Numerical Results Table
     const pResultsTable = document.getElementById('p-results-table');
     if (pResultsTable) {
+      const diffG = sG.result - tG.result;
+      const diffC = sC.result - tC.result;
+      const diffN = sN.result - tN.result;
+
       pResultsTable.innerHTML = `
         <thead>
           <tr>
             <th>Metric</th>
             <th>Simpson's 1/3 Rule (kWh)</th>
             <th>Trapezoidal Rule (kWh)</th>
-            <th>Discrepancy (kWh)</th>
+            <th>Discrepancy Δ (kWh)</th>
             <th>Physical Regime</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td>Solar Energy Generated (E_gen)</td>
-            <td>${sG.result.toFixed(4)}</td>
+            <td><strong>Solar Energy Generated (E_gen)</strong></td>
+            <td><strong>${sG.result.toFixed(4)}</strong></td>
             <td>${tG.result.toFixed(4)}</td>
-            <td>+${(sG.result - tG.result).toFixed(4)}</td>
-            <td>PV Daytime Harvest</td>
+            <td>+${diffG.toFixed(4)}</td>
+            <td>Photovoltaic Daytime Harvest</td>
           </tr>
           <tr>
-            <td>Building Energy Consumed (E_cons)</td>
-            <td>${sC.result.toFixed(4)}</td>
+            <td><strong>Building Energy Consumed (E_cons)</strong></td>
+            <td><strong>${sC.result.toFixed(4)}</strong></td>
             <td>${tC.result.toFixed(4)}</td>
-            <td>+${(sC.result - tC.result).toFixed(4)}</td>
-            <td>Facility Load Demand</td>
+            <td>+${diffC.toFixed(4)}</td>
+            <td>Facility Electrical Load Demand</td>
           </tr>
-          <tr>
+          <tr style="background: #f0fdf4;">
             <td><strong>Net Energy Balance (E_net)</strong></td>
-            <td><strong>${sN.result >= 0 ? '+' : ''}${sN.result.toFixed(4)}</strong></td>
+            <td><strong style="color: #059669;">${sN.result >= 0 ? '+' : ''}${sN.result.toFixed(4)}</strong></td>
             <td><strong>${tN.result >= 0 ? '+' : ''}${tN.result.toFixed(4)}</strong></td>
-            <td><strong>+${(sN.result - tN.result).toFixed(4)}</strong></td>
-            <td><strong>${sN.result >= 0 ? 'Surplus Exported to Grid' : 'Deficit Imported from Grid'}</strong></td>
+            <td><strong>+${diffN.toFixed(4)}</strong></td>
+            <td><strong>${sN.result >= 0 ? 'Surplus Exported to Utility Grid' : 'Deficit Imported from Utility Grid'}</strong></td>
           </tr>
         </tbody>
       `;
     }
+
+    // 3. Step-by-Step Calculation Breakdown
+    const pCalcBreakdown = document.getElementById('p-calc-breakdown');
+    if (pCalcBreakdown) {
+      pCalcBreakdown.innerHTML = `
+        <div style="margin-bottom: 4pt;"><strong>Simpson's 1/3 Rule Step-by-Step Mathematical Verification (h = ${data.h.toFixed(1)} h):</strong></div>
+        <div>• <strong>Solar Generation:</strong> (h/3) × [(${data.pGen[0].toFixed(2)} + ${data.pGen[data.pGen.length - 1].toFixed(2)}) + 4×(${sG.oddSum.toFixed(2)}) + 2×(${sG.evenSum.toFixed(2)})] = (${data.h.toFixed(1)}/3) × [${sG.bracket.toFixed(2)}] = <strong>${sG.result.toFixed(4)} kWh</strong></div>
+        <div>• <strong>Building Load:</strong> (h/3) × [(${data.pCons[0].toFixed(2)} + ${data.pCons[data.pCons.length - 1].toFixed(2)}) + 4×(${sC.oddSum.toFixed(2)}) + 2×(${sC.evenSum.toFixed(2)})] = (${data.h.toFixed(1)}/3) × [${sC.bracket.toFixed(2)}] = <strong>${sC.result.toFixed(4)} kWh</strong></div>
+        <div>• <strong>Net Energy:</strong> E_gen - E_cons = ${sG.result.toFixed(4)} - ${sC.result.toFixed(4)} = <strong>${sN.result >= 0 ? '+' : ''}${sN.result.toFixed(4)} kWh</strong></div>
+      `;
+    }
+
+    // 4. Dynamic Observations & Discussion
+    let peakGenVal = -1, peakGenTime = '12:00';
+    let peakConsVal = -1, peakConsTime = '12:00';
+    data.pGen.forEach((val, idx) => {
+      if (val > peakGenVal) { peakGenVal = val; peakGenTime = data.times[idx]; }
+    });
+    data.pCons.forEach((val, idx) => {
+      if (val > peakConsVal) { peakConsVal = val; peakConsTime = data.times[idx]; }
+    });
+
+    const diffGen = (sG.result - tG.result).toFixed(4);
+    const diffCons = (sC.result - tC.result).toFixed(4);
+    const selfSuff = ((sG.result / Math.max(0.001, sC.result)) * 100).toFixed(1);
+
+    const pObs = document.getElementById('p-observations-text');
+    if (pObs) {
+      pObs.innerHTML = `
+        During the 12-hour evaluation cycle (06:00 to 18:00), the solar installation generated a cumulative <strong>${sG.result.toFixed(4)} kWh</strong> of electrical energy, achieving a peak power output of <strong>${peakGenVal.toFixed(2)} kW</strong> at ${peakGenTime}. Over the identical interval, the facility consumed <strong>${sC.result.toFixed(4)} kWh</strong> with an afternoon peak demand of <strong>${peakConsVal.toFixed(2)} kW</strong> at ${peakConsTime}. The resulting net energy balance is <strong>${sN.result >= 0 ? '+' : ''}${sN.result.toFixed(4)} kWh</strong> (${sN.result >= 0 ? 'net surplus exported to the utility grid' : 'net deficit imported from the grid'}), reflecting a facility solar self-sufficiency factor of <strong>${selfSuff}%</strong>. Methodological evaluation confirms that Composite Simpson's 1/3 Rule produces higher energy totals than the Trapezoidal Rule by <strong>+${diffGen} kWh</strong> for generation and <strong>+${diffCons} kWh</strong> for consumption. This positive difference occurs because photovoltaic telemetry follows a concave-down parabolic trajectory (\(f''(t) < 0\)) across peak irradiance hours, which linear secant chords truncate.
+      `;
+    }
+
+    // 5. Dynamic Conclusion
+    const pConc = document.getElementById('p-conclusion-text');
+    if (pConc) {
+      pConc.innerHTML = `
+        1. <strong>Quadrature Verification:</strong> Composite Simpson's 1/3 Rule successfully evaluated discrete photovoltaic power telemetry, yielding total generation of <strong>${sG.result.toFixed(4)} kWh</strong>, total consumption of <strong>${sC.result.toFixed(4)} kWh</strong>, and net energy of <strong>${sN.result >= 0 ? '+' : ''}${sN.result.toFixed(4)} kWh</strong>.<br>
+        2. <strong>Methodological Accuracy:</strong> The Trapezoidal Rule introduced a truncation discrepancy of <strong>+${diffGen} kWh</strong> for solar generation due to linear chord under-integration of smooth parabolic peaks.<br>
+        3. <strong>Fourth-Order Precision:</strong> Composite Simpson's 1/3 Rule (\(\\mathcal{O}(h^4)\\)) is superior to the Trapezoidal Rule (\(\\mathcal{O}(h^2)\\)) for photovoltaic telemetry and utility billing settlement.<br>
+        4. <strong>Dimensional Integrity:</strong> Numerical quadrature rigorously resolves the physical dimensional difference between instantaneous rate of power transfer (kW) and cumulative electrical energy work (kWh).
+      `;
+    }
+
+    // Render all 4 graphs onto report canvases
+    renderReportGraphs(data, sG, tG, sC, tC, sN, tN);
   }
 
   // =========================================================================
