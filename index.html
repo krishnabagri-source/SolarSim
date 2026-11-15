@@ -1331,29 +1331,6 @@ int compute_audit(const double* p_gen, const double* p_cons, int length, double 
       </div>
 
       <!-- How It Works Explanation Grid -->
-      <div class="cpp-explanation-grid">
-        <div class="analysis-card">
-          <h4>1. Mathematical Quadrature in C++</h4>
-          <p>
-            The <code>simpsons_one_third()</code> function implements composite quadratic quadrature. It groups the telemetry ordinates into endpoints (\(y_0 + y_n\)), odd-indexed midpoints (\(4 \times \sum y_{\text{odd}}\)), and even-indexed shared boundaries (\(2 \times \sum y_{\text{even}}\)). This achieves fourth-order truncation error \(\mathcal{O}(h^4)\), capturing smooth curvature that the linear \(\mathcal{O}(h^2)\) <code>trapezoidal_rule()</code> truncates.
-          </p>
-        </div>
-        <div class="analysis-card">
-          <h4>2. Dynamic Inputs & Memory Bridging</h4>
-          <p>
-            Instead of hardcoding the 13 report values, the C++ program was enhanced with C-linkage export functions (<code>extern "C"</code>). JavaScript writes dynamic user telemetry directly into the WebAssembly linear memory buffer (<code>Float64Array</code>), passing memory pointers to C++. The C++ engine executes the integration loops directly on raw memory without garbage collection overhead.
-          </p>
-        </div>
-        <div class="analysis-card">
-          <h4>3. Emscripten & WebAssembly Build</h4>
-          <p>
-            The C++ code compiles into binary WebAssembly bytecode (<code>solarsim_engine.wasm</code>). The browser instantiates this compiled binary, executing at near-native CPU speeds.
-          </p>
-          <div class="math-box-sm" style="text-align: left; font-size: 0.78rem; margin-top: 0.5rem; overflow-x: auto;">
-            <code>emcc -O3 solarsim_engine.cpp -s WASM=1 -s EXPORTED_FUNCTIONS='["_simpsons_one_third_wasm", "_trapezoidal_rule_wasm", "_compute_audit"]' -o solarsim_engine.wasm</code>
-          </div>
-        </div>
-      </div>
     </section>
 
     <!-- SECTION 7: DOWNLOAD EXPERIMENT REPORT & MODAL -->
