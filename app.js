@@ -1986,15 +1986,73 @@
     }
 
     // 5. Dynamic Conclusion
-    const pConc = document.getElementById('p-conclusion-text');
-    if (pConc) {
-      pConc.innerHTML = `
-        1. <strong>Quadrature Verification:</strong> Composite Simpson's 1/3 Rule successfully evaluated discrete photovoltaic power telemetry, yielding total generation of <strong>${sG.result.toFixed(4)} kWh</strong>, total consumption of <strong>${sC.result.toFixed(4)} kWh</strong>, and net energy of <strong>${sN.result >= 0 ? '+' : ''}${sN.result.toFixed(4)} kWh</strong>.<br>
-        2. <strong>Methodological Accuracy:</strong> The Trapezoidal Rule introduced a truncation discrepancy of <strong>+${diffGen} kWh</strong> for solar generation due to linear chord under-integration of smooth parabolic peaks.<br>
-        3. <strong>Fourth-Order Precision:</strong> Composite Simpson's 1/3 Rule (\(\\mathcal{O}(h^4)\\)) is superior to the Trapezoidal Rule (\(\\mathcal{O}(h^2)\\)) for photovoltaic telemetry and utility billing settlement.<br>
-        4. <strong>Dimensional Integrity:</strong> Numerical quadrature rigorously resolves the physical dimensional difference between instantaneous rate of power transfer (kW) and cumulative electrical energy work (kWh).
-      `;
-    }
+    
+const pConc = document.getElementById('p-conclusion-text');
+
+if (pConc) {
+  const netEnergy = sN.result;
+  const netStatus = netEnergy >= 0 ? 'surplus' : 'deficit';
+
+  // Difference between Simpson's and Trapezoidal estimates
+  const difference = Number(diffGen);
+
+  pConc.innerHTML = `
+    <ol style="line-height: 1.9; padding-left: 24px;">
+
+      <li>
+        <strong>Quadrature Verification:</strong>
+        Composite Simpson's 1/3 Rule was successfully applied
+        to discrete solar power measurements to estimate total
+        electrical energy. The calculated solar generation is
+        <strong>${sG.result.toFixed(4)} kWh</strong>,
+        total consumption is
+        <strong>${sC.result.toFixed(4)} kWh</strong>,
+        and net energy is
+        <strong>${netEnergy >= 0 ? '+' : ''}${netEnergy.toFixed(4)} kWh</strong>,
+        indicating an overall energy ${netStatus}.
+      </li>
+
+      <li>
+        <strong>Method Comparison:</strong>
+        The Trapezoidal Rule was implemented as a comparison
+        method. A difference of
+        <strong>${Math.abs(difference).toFixed(4)} kWh</strong>
+        was observed between the Simpson's Rule and
+        Trapezoidal Rule estimates of solar generation.
+        This demonstrates how different numerical
+        integration techniques can produce different
+        approximations of the same energy.
+      </li>
+
+      <li>
+        <strong>Numerical Accuracy:</strong>
+        Composite Simpson's 1/3 Rule has fourth-order
+        convergence
+        <strong>O(h<sup>4</sup>)</strong>,
+        whereas the composite Trapezoidal Rule has
+        second-order convergence
+        <strong>O(h<sup>2</sup>)</strong>,
+        for sufficiently smooth functions.
+        Therefore, Simpson's Rule generally provides
+        higher accuracy for smooth solar power profiles
+        when the sampling interval is sufficiently small.
+      </li>
+
+      <li>
+        <strong>Real-World Application:</strong>
+        Numerical integration converts instantaneous
+        electrical power measurements
+        <strong>(kW)</strong> into cumulative electrical
+        energy <strong>(kWh)</strong> over time.
+        This approach supports solar energy monitoring,
+        electricity consumption analysis, and
+        energy management.
+      </li>
+
+    </ol>
+  `;
+}
+
 
     // Render all 4 graphs onto report canvases
     renderReportGraphs(data, sG, tG, sC, tC, sN, tN);
