@@ -1468,7 +1468,7 @@ int main() {
 
       <div class="page-footer-note">
         <span>Computational Methods Laboratory • Project Report</span>
-        <span>Page 1 of 6</span>
+        <span>Page 1 of 7</span>
       </div>
     </div>
 
@@ -1530,11 +1530,114 @@ int main() {
 
       <div class="page-footer-note">
         <span>Computational Methods Laboratory • Project Report</span>
-        <span>Page 2 of 6</span>
+        <span>Page 2 of 7</span>
       </div>
     </div>
 
-    <!-- ================= PAGE 3 ================= -->
+    <!-- ================= PAGE 3: C++ IMPLEMENTATION ================= -->
+    <div class="report-page page-cpp">
+      <div class="print-page-header">
+        <span>Computational Methods Laboratory • SolarSim Report</span>
+        <span>C++ Implementation</span>
+      </div>
+
+      <div class="print-section">
+        <h3>C++ Implementation</h3>
+        <p>
+          The following C++ program implements Composite Simpson's 1/3 Rule and the Trapezoidal Rule to calculate total solar energy generation, building energy consumption, and net electrical energy from discrete power measurements.
+        </p>
+        <div class="report-code-container">
+          <pre class="report-code-pre"><code>#include &lt;iostream&gt;
+#include &lt;iomanip&gt;
+using namespace std;
+
+// Simpson's 1/3 Rule
+double simpson(double y[], int n, double h) {
+    double sum = y[0] + y[n];
+
+    for (int i = 1; i &lt; n; i++) {
+        if (i % 2 == 0)
+            sum += 2 * y[i];
+        else
+            sum += 4 * y[i];
+    }
+
+    return (h / 3.0) * sum;
+}
+
+// Trapezoidal Rule
+double trapezoidal(double y[], int n, double h) {
+    double sum = y[0] + y[n];
+
+    for (int i = 1; i &lt; n; i++) {
+        sum += 2 * y[i];
+    }
+
+    return (h / 2.0) * sum;
+}
+
+int main() {
+    const int n = 12;
+    double h = 1.0;
+
+    double gen[n + 1], cons[n + 1], net[n + 1];
+
+    // Input solar generation
+    cout &lt;&lt; "Enter 13 solar power readings:\n";
+    for (int i = 0; i &lt;= n; i++) {
+        cin &gt;&gt; gen[i];
+    }
+
+    // Input building consumption
+    cout &lt;&lt; "Enter 13 consumption readings:\n";
+    for (int i = 0; i &lt;= n; i++) {
+        cin &gt;&gt; cons[i];
+    }
+
+    // Calculate net power
+    for (int i = 0; i &lt;= n; i++) {
+        net[i] = gen[i] - cons[i];
+    }
+
+    // Simpson's Rule calculations
+    double Egen = simpson(gen, n, h);
+    double Econs = simpson(cons, n, h);
+    double Enet = simpson(net, n, h);
+
+    // Trapezoidal Rule calculations
+    double Tgen = trapezoidal(gen, n, h);
+    double Tcons = trapezoidal(cons, n, h);
+    double Tnet = trapezoidal(net, n, h);
+
+    cout &lt;&lt; fixed &lt;&lt; setprecision(4);
+
+    cout &lt;&lt; "\n--- SIMPSON'S 1/3 RULE ---\n";
+    cout &lt;&lt; "Generated Energy: " &lt;&lt; Egen &lt;&lt; " kWh\n";
+    cout &lt;&lt; "Consumed Energy: " &lt;&lt; Econs &lt;&lt; " kWh\n";
+    cout &lt;&lt; "Net Energy: " &lt;&lt; Enet &lt;&lt; " kWh\n";
+
+    cout &lt;&lt; "\n--- TRAPEZOIDAL RULE ---\n";
+    cout &lt;&lt; "Generated Energy: " &lt;&lt; Tgen &lt;&lt; " kWh\n";
+    cout &lt;&lt; "Consumed Energy: " &lt;&lt; Tcons &lt;&lt; " kWh\n";
+    cout &lt;&lt; "Net Energy: " &lt;&lt; Tnet &lt;&lt; " kWh\n";
+
+    cout &lt;&lt; "\n--- DIFFERENCE BETWEEN METHODS ---\n";
+    cout &lt;&lt; "Generation: " &lt;&lt; Egen - Tgen &lt;&lt; " kWh\n";
+    cout &lt;&lt; "Consumption: " &lt;&lt; Econs - Tcons &lt;&lt; " kWh\n";
+    cout &lt;&lt; "Net Energy: " &lt;&lt; Enet - Tnet &lt;&lt; " kWh\n";
+
+    return 0;
+}</code></pre>
+        </div>
+      </div>
+
+      <div class="page-footer-note">
+        <span>Computational Methods Laboratory • Project Report</span>
+        <span>Page 3 of 7</span>
+      </div>
+    </div>
+
+    <!-- ================= PAGE 4 ================= -->
     <div class="report-page page-3">
       <div class="print-page-header">
         <span>Computational Methods Laboratory • SolarSim Report</span>
@@ -1567,11 +1670,11 @@ int main() {
 
       <div class="page-footer-note">
         <span>Computational Methods Laboratory • Project Report</span>
-        <span>Page 3 of 6</span>
+        <span>Page 4 of 7</span>
       </div>
     </div>
 
-    <!-- ================= PAGE 4 ================= -->
+    <!-- ================= PAGE 5 ================= -->
     <div class="report-page page-4">
       <div class="print-page-header">
         <span>Computational Methods Laboratory • SolarSim Report</span>
@@ -1609,11 +1712,11 @@ int main() {
 
       <div class="page-footer-note">
         <span>Computational Methods Laboratory • Project Report</span>
-        <span>Page 4 of 6</span>
+        <span>Page 5 of 7</span>
       </div>
     </div>
 
-    <!-- ================= PAGE 5 ================= -->
+    <!-- ================= PAGE 6 ================= -->
     <div class="report-page page-5">
       <div class="print-page-header">
         <span>Computational Methods Laboratory • SolarSim Report</span>
@@ -1651,11 +1754,11 @@ int main() {
 
       <div class="page-footer-note">
         <span>Computational Methods Laboratory • Project Report</span>
-        <span>Page 5 of 6</span>
+        <span>Page 6 of 7</span>
       </div>
     </div>
 
-    <!-- ================= PAGE 6 ================= -->
+    <!-- ================= PAGE 7 ================= -->
     <div class="report-page page-6">
       <div class="print-page-header">
         <span>Computational Methods Laboratory • SolarSim Report</span>
@@ -1739,7 +1842,7 @@ int main() {
 
       <div class="page-footer-note">
         <span>Computational Methods Laboratory • Project Report</span>
-        <span>Page 6 of 6</span>
+        <span>Page 7 of 7</span>
       </div>
     </div>
 
@@ -1751,7 +1854,7 @@ int main() {
       <div class="report-preview-modal-header">
         <div class="preview-title" style="display: flex; align-items: center; gap: 8px; font-weight: 700; color: #1e293b;">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-          Laboratory Assessment Report Preview (6 Pages)
+          Laboratory Assessment Report Preview (7 Pages)
         </div>
         <div class="preview-actions" style="display: flex; gap: 10px;">
           <button id="btn-print-from-modal" class="btn btn-primary btn-sm">🖨️ Print / Save PDF</button>
