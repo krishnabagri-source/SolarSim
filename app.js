@@ -2239,7 +2239,7 @@ if (pConc) {
     if (!setup) return;
     const { ctx, width, height } = setup;
 
-    const padL = 60, padR = 40, padT = 40, padB = 40;
+    const padL = width < 480 ? 46 : 60, padR = width < 480 ? 20 : 40, padT = width < 480 ? 30 : 40, padB = width < 480 ? 32 : 40;
     const plotW = width - padL - padR;
     const plotH = height - padT - padB;
 
@@ -2384,7 +2384,8 @@ if (pConc) {
     ctx.font = 'bold 11px sans-serif';
     ctx.textAlign = 'center';
     const tagText = `${formatClockTime(curTime)} | ${curP.toFixed(2)} kW`;
-    ctx.fillText(tagText, curX, curY - 14);
+    const safeTextX = Math.max(padL + 35, Math.min(padL + plotW - 35, curX));
+    ctx.fillText(tagText, safeTextX, Math.max(padT + 12, curY - 14));
 
     // Approximate cumulative energy up to curTime (numerical trapezoid sum)
     let cumEnergy = 0;
@@ -2412,7 +2413,8 @@ if (pConc) {
     if (!setup) return;
     const { ctx, width, height } = setup;
 
-    const padL = 50, padR = 40, padT = 30, padB = 40;
+    const isMobile = width < 500;
+    const padL = isMobile ? 38 : 50, padR = isMobile ? 16 : 40, padT = 24, padB = 34;
     const plotW = width - padL - padR;
     const plotH = height - padT - padB;
 
@@ -2508,23 +2510,26 @@ if (pConc) {
       ctx.fillText(`${pt.label}: ${pt.y.toFixed(2)} kW`, x, y - 12);
     });
 
-    // Legend
+    // Responsive Legend
+    ctx.font = isMobile ? '10px sans-serif' : '11px sans-serif';
+    const legX = isMobile ? padL + 10 : padL + 20;
+    const legTextX = isMobile ? padL + 30 : padL + 44;
+
     ctx.fillStyle = '#10b981';
-    ctx.fillRect(padL + 20, padT + 10, 16, 4);
+    ctx.fillRect(legX, padT + 8, 14, 4);
     ctx.fillStyle = '#0f172a';
-    ctx.font = '11px sans-serif';
     ctx.textAlign = 'left';
-    ctx.fillText("Simpson's Parabolic Arc (Captures full area)", padL + 44, padT + 15);
+    ctx.fillText(isMobile ? "Simpson Arc (Full Area)" : "Simpson's Parabolic Arc (Captures full area)", legTextX, padT + 13);
 
     ctx.fillStyle = '#ef4444';
-    ctx.fillRect(padL + 20, padT + 28, 16, 4);
+    ctx.fillRect(legX, padT + 24, 14, 4);
     ctx.fillStyle = '#0f172a';
-    ctx.fillText("Trapezoidal Straight Chord (Underestimates)", padL + 44, padT + 33);
+    ctx.fillText(isMobile ? "Trapezoid Chord (Underestimates)" : "Trapezoidal Straight Chord (Underestimates)", legTextX, padT + 29);
 
     ctx.fillStyle = 'rgba(239, 68, 68, 0.4)';
-    ctx.fillRect(padL + 20, padT + 46, 16, 10);
+    ctx.fillRect(legX, padT + 40, 14, 10);
     ctx.fillStyle = '#0f172a';
-    ctx.fillText("Truncated Energy Area (Systematic Underestimation Gap)", padL + 44, padT + 54);
+    ctx.fillText(isMobile ? "Truncated Energy (Underestimation Gap)" : "Truncated Energy Area (Systematic Underestimation Gap)", legTextX, padT + 48);
   }
 
   // --- EXPERIMENT GRAPH RENDERER DISPATCHER ---
@@ -2547,7 +2552,7 @@ if (pConc) {
     const { ctx, width, height } = setup;
 
     const data = getActiveData();
-    const padL = 60, padR = 40, padT = 30, padB = 40;
+    const padL = width < 480 ? 46 : 60, padR = width < 480 ? 18 : 40, padT = width < 480 ? 24 : 30, padB = width < 480 ? 34 : 40;
     const plotW = width - padL - padR;
     const plotH = height - padT - padB;
 
@@ -2603,11 +2608,14 @@ if (pConc) {
       ctx.lineWidth = 2;
       ctx.stroke();
 
-      // Point values
-      ctx.fillStyle = '#0f172a';
-      ctx.font = '10px monospace';
-      ctx.textAlign = 'center';
-      ctx.fillText(`${data.pGen[i].toFixed(2)}`, x, y - 10);
+      // Point values - on narrow screens show key and alternate points so numbers do not overlap
+      const showVal = plotW >= 500 || (plotW >= 300 && i % 2 === 0) || i === 0 || i === Math.floor(data.hours.length / 2) || i === data.hours.length - 1;
+      if (showVal) {
+        ctx.fillStyle = '#0f172a';
+        ctx.font = '10px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(`${data.pGen[i].toFixed(2)}`, x, y - 10);
+      }
     });
   }
 
@@ -2619,7 +2627,7 @@ if (pConc) {
     const { ctx, width, height } = setup;
 
     const data = getActiveData();
-    const padL = 60, padR = 40, padT = 30, padB = 40;
+    const padL = width < 480 ? 46 : 60, padR = width < 480 ? 18 : 40, padT = width < 480 ? 24 : 30, padB = width < 480 ? 34 : 40;
     const plotW = width - padL - padR;
     const plotH = height - padT - padB;
 
@@ -2674,10 +2682,14 @@ if (pConc) {
       ctx.lineWidth = 2;
       ctx.stroke();
 
-      ctx.fillStyle = '#0f172a';
-      ctx.font = '10px monospace';
-      ctx.textAlign = 'center';
-      ctx.fillText(`${data.pCons[i].toFixed(2)}`, x, y - 10);
+      // Point values - on narrow screens show key and alternate points so numbers do not overlap
+      const showVal = plotW >= 500 || (plotW >= 300 && i % 2 === 0) || i === 0 || i === Math.floor(data.hours.length / 2) || i === data.hours.length - 1;
+      if (showVal) {
+        ctx.fillStyle = '#0f172a';
+        ctx.font = '10px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(`${data.pCons[i].toFixed(2)}`, x, y - 10);
+      }
     });
   }
 
@@ -2689,7 +2701,7 @@ if (pConc) {
     const { ctx, width, height } = setup;
 
     const data = getActiveData();
-    const padL = 60, padR = 40, padT = 30, padB = 40;
+    const padL = width < 480 ? 46 : 60, padR = width < 480 ? 18 : 40, padT = width < 480 ? 24 : 30, padB = width < 480 ? 34 : 40;
     const plotW = width - padL - padR;
     const plotH = height - padT - padB;
 
@@ -2785,7 +2797,7 @@ if (pConc) {
     const { ctx, width, height } = setup;
 
     const data = getActiveData();
-    const padL = 60, padR = 40, padT = 30, padB = 40;
+    const padL = width < 480 ? 46 : 60, padR = width < 480 ? 18 : 40, padT = width < 480 ? 24 : 30, padB = width < 480 ? 34 : 40;
     const plotW = width - padL - padR;
     const plotH = height - padT - padB;
 
@@ -2847,18 +2859,22 @@ if (pConc) {
       ctx.fill();
     });
 
-    // Legend
+    // Responsive Legend
+    const isMobile = width < 500;
+    ctx.font = isMobile ? '10px sans-serif' : '11px sans-serif';
+    const legX = isMobile ? padL + 10 : padL + 20;
+    const legTextX = isMobile ? padL + 30 : padL + 44;
+
     ctx.fillStyle = '#10b981';
-    ctx.fillRect(padL + 20, padT + 10, 18, 4);
+    ctx.fillRect(legX, padT + 8, 14, 4);
     ctx.fillStyle = '#0f172a';
-    ctx.font = '11px sans-serif';
     ctx.textAlign = 'left';
-    ctx.fillText("Simpson's 1/3 Rule (Quadratic O(h⁴))", padL + 44, padT + 15);
+    ctx.fillText(isMobile ? "Simpson's 1/3 (Quadratic O(h⁴))" : "Simpson's 1/3 Rule (Quadratic O(h⁴))", legTextX, padT + 13);
 
     ctx.fillStyle = '#ef4444';
-    ctx.fillRect(padL + 20, padT + 26, 18, 4);
+    ctx.fillRect(legX, padT + 24, 14, 4);
     ctx.fillStyle = '#0f172a';
-    ctx.fillText("Trapezoidal Rule (Linear O(h²))", padL + 44, padT + 31);
+    ctx.fillText(isMobile ? "Trapezoidal (Linear O(h²))" : "Trapezoidal Rule (Linear O(h²))", legTextX, padT + 29);
   }
 
   // --- CANVAS: EXPERIMENT 5 (LOG-LOG ERROR CONVERGENCE) ---
@@ -2868,7 +2884,8 @@ if (pConc) {
     if (!setup) return;
     const { ctx, width, height } = setup;
 
-    const padL = 70, padR = 40, padT = 30, padB = 40;
+    const isMobile = width < 500;
+    const padL = isMobile ? 54 : 70, padR = isMobile ? 18 : 40, padT = isMobile ? 24 : 30, padB = isMobile ? 34 : 40;
     const plotW = width - padL - padR;
     const plotH = height - padT - padB;
 
@@ -2972,18 +2989,21 @@ if (pConc) {
       ctx.fill();
     });
 
-    // Legends
+    // Responsive Legends
+    ctx.font = isMobile ? 'bold 10px sans-serif' : 'bold 11px sans-serif';
+    const legX = isMobile ? padL + 10 : padL + 20;
+    const legTextX = isMobile ? padL + 30 : padL + 44;
+
     ctx.fillStyle = '#4f46e5';
-    ctx.fillRect(padL + 20, padT + 10, 18, 4);
+    ctx.fillRect(legX, padT + 8, 14, 4);
     ctx.fillStyle = '#0f172a';
-    ctx.font = 'bold 11px sans-serif';
     ctx.textAlign = 'left';
-    ctx.fillText("Simpson's 1/3 Rule (Slope = 4.0, Fourth-Order O(h⁴))", padL + 44, padT + 15);
+    ctx.fillText(isMobile ? "Simpson: Slope 4.0, O(h⁴)" : "Simpson's 1/3 Rule (Slope = 4.0, Fourth-Order O(h⁴))", legTextX, padT + 13);
 
     ctx.fillStyle = '#ef4444';
-    ctx.fillRect(padL + 20, padT + 28, 18, 4);
+    ctx.fillRect(legX, padT + 24, 14, 4);
     ctx.fillStyle = '#0f172a';
-    ctx.fillText("Trapezoidal Rule (Slope = 2.0, Second-Order O(h²))", padL + 44, padT + 33);
+    ctx.fillText(isMobile ? "Trapezoidal: Slope 2.0, O(h²)" : "Trapezoidal Rule (Slope = 2.0, Second-Order O(h²))", legTextX, padT + 29);
   }
 
   // --- CANVAS: EXPERIMENT 6 (WEATHER SCENARIOS) ---
@@ -2996,7 +3016,8 @@ if (pConc) {
     const sc = getWeatherProfile(state.exp6.scenario);
     const pCons = DEFAULT_DATA.pCons;
 
-    const padL = 60, padR = 40, padT = 30, padB = 40;
+    const isMobile = width < 500;
+    const padL = isMobile ? 46 : 60, padR = isMobile ? 18 : 40, padT = isMobile ? 24 : 30, padB = isMobile ? 34 : 40;
     const plotW = width - padL - padR;
     const plotH = height - padT - padB;
 
@@ -3066,18 +3087,21 @@ if (pConc) {
       ctx.fill();
     });
 
-    // Legend
+    // Responsive Legend
+    ctx.font = isMobile ? '10px sans-serif' : '11px sans-serif';
+    const legX = isMobile ? padL + 10 : padL + 20;
+    const legTextX = isMobile ? padL + 30 : padL + 44;
+
     ctx.fillStyle = ctx.strokeStyle;
-    ctx.fillRect(padL + 20, padT + 10, 18, 4);
+    ctx.fillRect(legX, padT + 8, 14, 4);
     ctx.fillStyle = '#0f172a';
-    ctx.font = '11px sans-serif';
     ctx.textAlign = 'left';
-    ctx.fillText("Solar Generation Profile", padL + 44, padT + 15);
+    ctx.fillText("Solar Generation Profile", legTextX, padT + 13);
 
     ctx.fillStyle = '#3b82f6';
-    ctx.fillRect(padL + 20, padT + 26, 18, 4);
+    ctx.fillRect(legX, padT + 24, 14, 4);
     ctx.fillStyle = '#0f172a';
-    ctx.fillText("Building Demand Profile", padL + 44, padT + 31);
+    ctx.fillText("Building Demand Profile", legTextX, padT + 29);
   }
 
   // --- REUSABLE GRID DRAWING UTILITY ---
@@ -3088,8 +3112,14 @@ if (pConc) {
     ctx.strokeStyle = '#f1f5f9';
     ctx.lineWidth = 1;
 
+    // Responsive y-axis step to prevent label collision on shorter canvases
+    let effPStep = pStep;
+    if (plotH < 200 && pMax / effPStep > 5) {
+      effPStep = pStep * 2;
+    }
+
     // Horizontal lines
-    for (let p = 0; p <= pMax; p += pStep) {
+    for (let p = 0; p <= pMax; p += effPStep) {
       const y = padT + plotH - (p / pMax) * plotH;
       ctx.beginPath();
       ctx.moveTo(padL, y);
@@ -3099,21 +3129,33 @@ if (pConc) {
       ctx.fillStyle = '#94a3b8';
       ctx.font = '10px monospace';
       ctx.textAlign = 'right';
-      ctx.fillText(`${p} kW`, padL - 8, y + 3);
+      ctx.fillText(`${p} kW`, padL - 6, y + 3);
+    }
+
+    // Responsive x-axis stride: on narrow screens, skip every N hours so labels never collide
+    let stride = 1;
+    if (plotW < 320) {
+      stride = 3;
+    } else if (plotW < 520) {
+      stride = 2;
     }
 
     // Vertical lines
-    hours.forEach((h) => {
+    hours.forEach((h, i) => {
       const x = padL + ((h - tMin) / (tMax - tMin)) * plotW;
       ctx.beginPath();
       ctx.moveTo(x, padT);
       ctx.lineTo(x, padT + plotH);
       ctx.stroke();
 
-      ctx.fillStyle = '#94a3b8';
-      ctx.font = '10px monospace';
-      ctx.textAlign = 'center';
-      ctx.fillText(`${formatClockTime(h)}`, x, padT + plotH + 16);
+      const isLast = i === hours.length - 1;
+      const isFirst = i === 0;
+      if (isFirst || isLast || i % stride === 0) {
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '10px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(`${formatClockTime(h)}`, x, padT + plotH + 16);
+      }
     });
 
     // Base axes
