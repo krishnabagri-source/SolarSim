@@ -323,6 +323,7 @@
 
   // --- INITIALIZATION & DOM BINDINGS ---
   document.addEventListener('DOMContentLoaded', async () => {
+    initMobileNav();
     initModeTabs();
     initExperimentTabs();
     initDefaultTable();
@@ -344,13 +345,78 @@
     // Initialize math rendering (KaTeX with offline Unicode fallback)
     initMathRendering();
 
-    // Re-render canvases on resize
-    window.addEventListener('resize', debounce(() => {
+    // Re-render canvases on resize and device orientation change
+    const onViewportChange = debounce(() => {
       renderActiveExpGraph();
       renderAnimatedSolarFrame(state.anim.currentTime);
       renderCurvatureDemo();
-    }, 150));
+    }, 150);
+
+    window.addEventListener('resize', onViewportChange);
+    window.addEventListener('orientationchange', () => {
+      setTimeout(onViewportChange, 200);
+    });
   });
+
+  // --- MOBILE NAVIGATION CONTROLS ---
+  function initMobileNav() {
+    const btnToggle = document.getElementById('btn-mobile-nav');
+    const navLinks = document.getElementById('main-nav-links');
+    const backdrop = document.getElementById('mobile-nav-backdrop');
+
+    if (!btnToggle || !navLinks) return;
+
+    function openMenu() {
+      btnToggle.classList.add('open');
+      btnToggle.setAttribute('aria-expanded', 'true');
+      navLinks.classList.add('nav-open');
+      if (backdrop) backdrop.classList.add('active');
+      document.body.classList.add('mobile-nav-locked');
+    }
+
+    function closeMenu() {
+      btnToggle.classList.remove('open');
+      btnToggle.setAttribute('aria-expanded', 'false');
+      navLinks.classList.remove('nav-open');
+      if (backdrop) backdrop.classList.remove('active');
+      document.body.classList.remove('mobile-nav-locked');
+    }
+
+    btnToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = navLinks.classList.contains('nav-open');
+      if (isOpen) {
+        closeMenu();
+      } else {
+        openMenu();
+      }
+    });
+
+    if (backdrop) {
+      backdrop.addEventListener('click', closeMenu);
+    }
+
+    // Close menu when any nav item or action button inside it is clicked
+    navLinks.querySelectorAll('a, button').forEach(el => {
+      el.addEventListener('click', () => {
+        closeMenu();
+      });
+    });
+
+    // Close on Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && navLinks.classList.contains('nav-open')) {
+        closeMenu();
+      }
+    });
+
+    // Auto-close if resized to desktop viewport
+    window.addEventListener('resize', debounce(() => {
+      if (window.innerWidth > 1024 && navLinks.classList.contains('nav-open')) {
+        closeMenu();
+      }
+    }, 100));
+  }
 
   // --- C++ IMPLEMENTATION SECTION CONTROLS ---
   function initCppSection() {
@@ -733,10 +799,10 @@
         <td class="font-mono">${hour.toFixed(2)}</td>
         <td><span class="weight-badge ${weightClass}">${weight}</span></td>
         <td>
-          <input type="number" step="0.05" min="0" value="${pGen.toFixed(2)}" data-row="${i}" data-col="pGen" class="cell-input">
+          <input type="number" step="0.05" min="0" value="${pGen.toFixed(2)}" data-row="${i}" data-col="pGen" class="cell-input" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" aria-label="Solar Generation at ${c.times[i]}">
         </td>
         <td>
-          <input type="number" step="0.05" min="0" value="${pCons.toFixed(2)}" data-row="${i}" data-col="pCons" class="cell-input">
+          <input type="number" step="0.05" min="0" value="${pCons.toFixed(2)}" data-row="${i}" data-col="pCons" class="cell-input" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" aria-label="Building Load at ${c.times[i]}">
         </td>
         <td class="font-mono ${pNet >= 0 ? 'text-positive' : 'text-negative'}">${pNet >= 0 ? '+' : ''}${pNet.toFixed(2)}</td>
         <td>

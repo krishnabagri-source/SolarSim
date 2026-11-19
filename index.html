@@ -31,7 +31,13 @@
         </div>
       </div>
       
-      <div class="nav-links">
+      <button id="btn-mobile-nav" class="mobile-nav-toggle" aria-label="Toggle navigation menu" aria-expanded="false">
+        <span class="hamburger-bar"></span>
+        <span class="hamburger-bar"></span>
+        <span class="hamburger-bar"></span>
+      </button>
+      
+      <div class="nav-links" id="main-nav-links">
         <a href="#problem-section" class="nav-item">1. The Problem</a>
         <a href="#why-not-addition" class="nav-item">2. Why Not Addition?</a>
         <a href="#method-section" class="nav-item">3. Simpson's 1/3 Rule</a>
@@ -45,6 +51,7 @@
       </div>
     </div>
   </header>
+  <div id="mobile-nav-backdrop" class="mobile-nav-backdrop" aria-hidden="true"></div>
 
   <!-- Learning Journey Progress Tracker -->
   <nav class="learning-tracker" aria-label="Learning Journey Roadmap">
@@ -426,6 +433,10 @@
           </div>
         </div>
 
+        <div class="mobile-scroll-hint">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+          <span>Scroll table horizontally to view all telemetry columns</span>
+        </div>
         <div class="table-container">
           <table class="data-table" id="default-data-table">
             <thead>
@@ -505,6 +516,10 @@
           </div>
         </div>
 
+        <div class="mobile-scroll-hint">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+          <span>Scroll table horizontally to view all telemetry columns</span>
+        </div>
         <div class="table-container">
           <table class="data-table editable-table" id="custom-data-table">
             <thead>
@@ -842,6 +857,10 @@
         </div>
 
         <!-- Comparative Table matching Project Report Page 11 -->
+        <div class="mobile-scroll-hint">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+          <span>Scroll table horizontally to view all telemetry columns</span>
+        </div>
         <div class="table-container">
           <table class="data-table comparative-table" id="exp4-comp-table">
             <thead>
@@ -961,6 +980,10 @@
           </div>
         </div>
 
+        <div class="mobile-scroll-hint">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+          <span>Scroll table horizontally to view all telemetry columns</span>
+        </div>
         <div class="table-container">
           <table class="data-table" id="convergence-table">
             <thead>
